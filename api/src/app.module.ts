@@ -3,6 +3,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AppConfigModule } from './config/config.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { HealthModule } from './health/health.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   // root modules connect global pieces
@@ -14,6 +15,7 @@ import { HealthModule } from './health/health.module';
     }]), PrismaModule, HealthModule,
     PrismaModule,                   // provides connected db client via DI globally
     HealthModule,                   // provides verification that nest, prisma, and postgres work during runtime
+    UserModule,                     // user management module
   ],
 })
 export class AppModule {}
