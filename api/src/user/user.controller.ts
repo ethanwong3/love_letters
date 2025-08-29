@@ -38,4 +38,10 @@ export class UserController {
     async deleteUser(@Param('id') id: string) {
         return this.userService.deleteUser(id);
     }
+
+    // get all users
+    @Get()
+    findAll() {
+      return this.userService.findAll();
+    }
 }

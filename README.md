@@ -33,6 +33,10 @@ pnpm dlx prisma init
 ensure app performance and security with rate limiter
 pnpm add @nestjs/throttler
 
+testing
+npm install --save-dev jest @types/jest ts-jest
+npx ts-jest config:init
+
 # Set Up:
 
 Requirements: node.js / pnpm / psql 16
@@ -96,9 +100,30 @@ Backend → Railway or Render.
 Database → Neon or Supabase.
 Env config managed via platform dashboards.
 
-# API Endpoints:
+# Stack:
 
-...
+Frontend:
+    NextJS
+    Typescript
+    Tailwindcss (shadcn/ui)
+
+Auth:
+    JWT
+    Bcrypt
+    Passport
+
+Backend:
+    NestJS
+    Typescript
+    PostgreSQL
+    Prisma
+    Jest
+
+DevOps:
+    Vercel (Frontend Host)
+    Railway/Render (Backend Host)
+    Github (CI/CD)
+    pnpm (Package Management)
 
 *LOGS*
 
