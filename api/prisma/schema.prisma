@@ -14,4 +14,49 @@ model User {
   displayName  String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  coupleAsUser1 Couple? @relation("User1ToCouple")
+  coupleAsUser2 Couple? @relation("User2ToCouple")
+  coupleId      String? @unique
+
+  friends      User[]   @relation("UserToFriends", map: "UserToFriends_fk")
+  friendsOf    User[]   @relation("UserToFriends")
+
+  letters      Letter[]
+}
+
+model Couple {
+  id             String   @id @default(uuid())
+  user1          User     @relation("User1ToCouple", fields: [user1Id], references: [id])
+  user1Id        String   @unique
+  user2          User     @relation("User2ToCouple", fields: [user2Id], references: [id])
+  user2Id        String   @unique
+  startDate      DateTime @default(now())
+  letterFrequency Int?
+  letterStreak   Int?
+  initiator      String?
+
+  @@unique([user1Id, user2Id])
+}
+
+enum LetterStatus {
+  DRAFT
+  SCHEDULED
+  SENT
+  OPENED
+}
+
+model Letter {
+  id            String       @id @default(cuid())
+  author        User         @relation(fields: [authorId], references: [id])
+  authorId      String
+  recipientId   String
+  recipientName String
+  subject       String?
+  content       String
+  songUrl       String
+  status        LetterStatus @default(DRAFT)
+  createdAt     DateTime     @default(now())
+  finishedAt    DateTime?
+  deliveryDate  DateTime?
 }

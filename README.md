@@ -129,10 +129,14 @@ DevOps:
 
 # Completed:
 
-- user, basic data model and api endpoints, tested.
+- user, basic api endpoints, tested
 - auth, register and login with jwt infrastructure for token generation, validation, and guarding, tested.
+- letter, data model.
 
 # To Do (Next):
+
+- implement letter feature within letter modules
+- implement friending / partner features within user module
 
 - token refreshes + logout feature
 - in frontend, ensure register has password confirmation matching and secure password checks and trims json body data
@@ -142,5 +146,8 @@ DevOps:
 
 - replace localhost placeholder domain with deployed vercel domain in deployment
 - deploy backend and db
+
 - notifications?
-- write unit and e2e tests using jest or supertest
+- onboarding codes?
+
+// diary entry for today => relfection on this project and my actions, stress and lack of focus strip this project of its true intention. Inherently the beauty of the act comes from non-digitised relations in an age consumed by screentime. May make this a one time use project, only downside is that a lot of the additional features will not be needed. The upside is I can focus on perfecting the necessary features and leave the additionals and extensions in the future if I really have the time. I think the project that I will be working on next term in the big group project will appear more meaningful and appealing anyway. Hopefully this doesn't feel like admitting defeat since I am still accomplishing the main purpose of this project and I am still gaining so much learning value from it. The additional features were more tacky anyway and were not a test to my learning as much as the crux of the project itself.

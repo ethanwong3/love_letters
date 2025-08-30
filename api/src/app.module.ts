@@ -6,6 +6,7 @@ import { HealthModule } from './health/health.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtStrategy } from './auth/jwt.strategy';
+import { LetterModule } from './letter/letter.module';
 
 @Module({
   // root modules connect global pieces
@@ -18,7 +19,7 @@ import { JwtStrategy } from './auth/jwt.strategy';
     PrismaModule,                   // provides connected db client via DI globally
     HealthModule,                   // provides verification that nest, prisma, and postgres work during runtime
     UserModule,                     // user management module
-    AuthModule,                     // auth management module
+    AuthModule, LetterModule,                     // auth management module
   ],
   providers: [JwtStrategy],
 })
