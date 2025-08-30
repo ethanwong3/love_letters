@@ -129,23 +129,14 @@ DevOps:
 
 # Completed:
 
-- installed baseline dependencies listed above
-- configured environment variables and implemented zod schema validation to fail-fast on boot if errors occur
-- created the skeleton of the backend app (NestJS + TS) and implemented global DTO validation pipelines
-- added basic API rate limiting with throttler
-- set up PSQL DB and connected via Prisma ORM
-- added draft user model
-- created Prisma DI wrapper to handle safe connect/disconnect on boot/shutdown
-- exposed Prisma globally (prisma client created by DI wrapper can access db in any module)
-- created health check module 
-- exposed health/db endpoint to verify runtime db connection
+- user, basic data model and api endpoints, tested.
+- auth, register and login with jwt infrastructure for token generation, validation, and guarding, tested.
 
 # To Do (Next):
 
-- finalise drafted user model
-- create user module
-- add basic CRUD endpoints for testing
-- prepare implementation to develop and test auth
+- token refreshes + logout feature
+- in frontend, ensure register has password confirmation matching and secure password checks and trims json body data
+- add a basic frontend to visualise user and auth endpoints
 
 # To Do (Reminder):
 
