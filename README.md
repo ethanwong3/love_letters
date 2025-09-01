@@ -131,7 +131,7 @@ DevOps:
 
 - user, basic api endpoints, tested
 - auth, register and login with jwt infrastructure for token generation, validation, and guarding, tested.
-- letter, data model.
+- letter, data model, api endpoints, dtos.
 
 # To Do (Next):
 
@@ -149,5 +149,4 @@ DevOps:
 
 - notifications?
 - onboarding codes?
-
-// diary entry for today => relfection on this project and my actions, stress and lack of focus strip this project of its true intention. Inherently the beauty of the act comes from non-digitised relations in an age consumed by screentime. May make this a one time use project, only downside is that a lot of the additional features will not be needed. The upside is I can focus on perfecting the necessary features and leave the additionals and extensions in the future if I really have the time. I think the project that I will be working on next term in the big group project will appear more meaningful and appealing anyway. Hopefully this doesn't feel like admitting defeat since I am still accomplishing the main purpose of this project and I am still gaining so much learning value from it. The additional features were more tacky anyway and were not a test to my learning as much as the crux of the project itself.
+- allow users to search between letters?

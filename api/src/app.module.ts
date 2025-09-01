@@ -11,15 +11,16 @@ import { LetterModule } from './letter/letter.module';
 @Module({
   // root modules connect global pieces
   imports: [
-    AppConfigModule,                // loads and validates env vars (fail fast on bad config)
-    ThrottlerModule.forRoot([{      // rate limit: 100req/60s/IP
+    AppConfigModule,
+    ThrottlerModule.forRoot([{
       ttl: 60,
       limit: 100,
     }]), PrismaModule, HealthModule,
-    PrismaModule,                   // provides connected db client via DI globally
-    HealthModule,                   // provides verification that nest, prisma, and postgres work during runtime
-    UserModule,                     // user management module
-    AuthModule, LetterModule,                     // auth management module
+    PrismaModule,
+    HealthModule,
+    UserModule,
+    AuthModule,
+    LetterModule,
   ],
   providers: [JwtStrategy],
 })
