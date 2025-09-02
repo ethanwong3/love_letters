@@ -22,7 +22,8 @@ model User {
   friends      User[]   @relation("UserToFriends", map: "UserToFriends_fk")
   friendsOf    User[]   @relation("UserToFriends")
 
-  letters      Letter[]
+  lettersAuth  Letter[] @relation("authLetter")
+  lettersRecip Letter[] @relation("recipLetter")
 }
 
 model Couple {
@@ -48,10 +49,10 @@ enum LetterStatus {
 
 model Letter {
   id            String       @id @default(cuid())
-  author        User         @relation(fields: [authorId], references: [id])
+  author        User         @relation("authLetter", fields: [authorId], references: [id])
   authorId      String
+  recipient     User         @relation("recipLetter", fields: [recipientId], references: [id])
   recipientId   String
-  recipientName String
   subject       String?
   content       String
   songUrl       String?

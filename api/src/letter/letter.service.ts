@@ -9,6 +9,7 @@ import { UpdateLetterDto } from './dto/update-letter.dto';
 import { SendLetterDto } from './dto/send-letter.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
+// too sack to make this global, just copy pasting this lol
 enum LetterStatus {
   DRAFT = 'DRAFT',
   SCHEDULED = 'SCHEDULED',
@@ -22,13 +23,11 @@ export class LetterService {
 
   // draft a letter
   async createLetter(createLetterDto: CreateLetterDto) {
-    const recipientName = "err"; // fetch recipient name should i use user service or prisma query?
     try {
       const letter = await this.prisma.letter.create({
         data: {
           authorId: createLetterDto.authorId,
           recipientId: createLetterDto.recipientId,
-          recipientName: recipientName,
           subject: createLetterDto.subject,
           content: createLetterDto.content,
           songUrl: createLetterDto.songUrl,
