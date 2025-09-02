@@ -17,4 +17,9 @@ export class SendLetterDto {
   @IsEnum(LetterStatus)
   @IsOptional()
   status?: LetterStatus = LetterStatus.SCHEDULED;
+
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  finishedAt?: Date;
 }

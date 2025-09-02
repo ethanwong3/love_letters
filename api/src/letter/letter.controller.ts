@@ -28,25 +28,25 @@ export class LetterController {
 
     // get all letters sent
     @Get('sent')
-    async getAllSentLetters() {
-        return this.letterService.getSentLetters();
+    async getAllSentLetters(@Param('id') authorId: string) {
+        return this.letterService.getSentLetters(authorId);
     }
 
     // get single letter sent
     @Get('sent/:id')
-    async getSingleSentLetter(@Param('id') id: string) {
-        return this.letterService.getSentLetterById(id);
+    async getSingleSentLetter(@Param('id') id: string, @Param('authorId') authorId: string) {
+        return this.letterService.getSentLetterById(id, authorId);
     }
 
     // get all letters received
     @Get('received')
-    async getAllReceivedLetters() {
-        return this.letterService.getReceivedLetters();
+    async getAllReceivedLetters(@Param('id') id: string) {
+        return this.letterService.getReceivedLetters(id);
     }
 
     // get single letter received && mark as read
     @Get('received/:id')
-    async getSingleReceivedLetter(@Param('id') id: string) {
-        return this.letterService.getReceivedLetterById(id);
+    async getSingleReceivedLetter(@Param('id') id: string, @Param('recipientId') recipientId: string) {
+        return this.letterService.getReceivedLetterById(id, recipientId);
     }
 }

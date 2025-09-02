@@ -54,7 +54,7 @@ model Letter {
   recipientName String
   subject       String?
   content       String
-  songUrl       String
+  songUrl       String?
   status        LetterStatus @default(DRAFT)
   createdAt     DateTime     @default(now())
   finishedAt    DateTime?

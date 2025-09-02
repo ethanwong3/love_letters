@@ -4,10 +4,6 @@ import { Type } from 'class-transformer';
 export class UpdateLetterDto {
   @IsString()
   @IsOptional()
-  recipientName?: string;
-
-  @IsString()
-  @IsOptional()
   subject?: string;
 
   @IsString()
@@ -17,6 +13,11 @@ export class UpdateLetterDto {
   @IsUrl()
   @IsOptional()
   songUrl?: string;
+
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  finishedAt?: Date;
 
   @IsDate()
   @Type(() => Date)
