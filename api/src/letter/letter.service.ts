@@ -23,6 +23,7 @@ export class LetterService {
 
   // draft a letter
   async createLetter(createLetterDto: CreateLetterDto) {
+    // create letter in db
     try {
       const letter = await this.prisma.letter.create({
         data: {
@@ -31,18 +32,18 @@ export class LetterService {
           subject: createLetterDto.subject,
           content: createLetterDto.content,
           songUrl: createLetterDto.songUrl,
-          status: LetterStatus.DRAFT, // remove this from DTO too?
+          status: LetterStatus.DRAFT,
         },
       });
-
       return letter;
     } catch (error) {
-      throw new BadRequestException('Failed to create draft letter: ' + error.message);
+      throw new BadRequestException('Failed to create letter: ' + error.message);
     }
   }
 
   // update a drafted letter
   async editLetter(id: string, updateLetterDto: UpdateLetterDto) {
+    // check if letter exists and is a draft
     const existing = await this.prisma.letter.findUnique({ where: { id } });
     if (!existing) {
       throw new NotFoundException('Letter not found');
@@ -50,7 +51,7 @@ export class LetterService {
     if (existing.status !== LetterStatus.DRAFT) {
       throw new ForbiddenException('Only drafts can be updated');
     }
-
+    // update letter in db
     try {
       const updated = await this.prisma.letter.update({
         where: { id },
@@ -58,7 +59,7 @@ export class LetterService {
           subject: updateLetterDto.subject,
           content: updateLetterDto.content,
           songUrl: updateLetterDto.songUrl,
-          finishedAt: updateLetterDto.finishedAt ?? existing.finishedAt,
+          finishedAt: new Date(),
         },
       });
       return updated;
@@ -69,6 +70,7 @@ export class LetterService {
 
   // send a letter now or later
   async sendLetter(id: string, sendLetterDto: SendLetterDto) {
+    // check if letter exists and is a draft
     const existing = await this.prisma.letter.findUnique({ where: { id } });
     if (!existing) {
       throw new NotFoundException('Letter not found');
@@ -76,14 +78,14 @@ export class LetterService {
     if (existing.status !== LetterStatus.DRAFT) {
       throw new ForbiddenException('Only drafts can be sent');
     }
-
+    // update letter in db and send letter to recipient
     try {
       const updated = await this.prisma.letter.update({
         where: { id },
         data: {
-          status: LetterStatus.SENT,
-          deliveryDate: sendLetterDto.deliveryDate ?? new Date(), // send immediately if no date
-          finishedAt: sendLetterDto.finishedAt ?? new Date(), // mark as finished at send
+          status: sendLetterDto.deliveryDate ? LetterStatus.SCHEDULED : LetterStatus.SENT,
+          finishedAt: existing.finishedAt ?? new Date(),
+          deliveryDate: sendLetterDto.deliveryDate ?? new Date(),
         },
       });
       return updated;
@@ -92,12 +94,23 @@ export class LetterService {
     }
   }
 
+  // get all letters drafted (by current user)
+  async getDraftedLetters(authorId: string) {
+    return this.prisma.letter.findMany({
+      where: {
+        authorId,
+        status: LetterStatus.DRAFT,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   // get all letters sent (by current user)
   async getSentLetters(authorId: string) {
     return this.prisma.letter.findMany({
       where: {
         authorId,
-        status: LetterStatus.SENT,
+        status: { in: [LetterStatus.SCHEDULED, LetterStatus.SENT] }
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -121,7 +134,7 @@ export class LetterService {
       where: {
         recipientId,
         status: LetterStatus.SENT,
-        deliveryDate: { lte: new Date() }, // only show delivered
+        deliveryDate: { lte: new Date() },
       },
       orderBy: { deliveryDate: 'desc' },
     });
@@ -137,17 +150,17 @@ export class LetterService {
       throw new ForbiddenException('You cannot access this letter');
     }
     if (letter.status !== LetterStatus.SENT) {
-      throw new ForbiddenException('This letter has not been sent yet');
+      throw new ForbiddenException('WTF, you should not be seeing this letter, it is unsent');
     }
     if (letter.deliveryDate && letter.deliveryDate > new Date()) {
-      throw new ForbiddenException('This letter is not yet available');
+      throw new ForbiddenException('WTF, you should not be seeing this letter, it is undelivered');
     }
 
-    // mark as read (business model: optional read receipts)
+    // mark as read
     const updated = await this.prisma.letter.update({
       where: { id },
       data: {
-        // You could add a "readAt" field in schema if read tracking is needed
+        status: LetterStatus.OPENED,
       },
     });
 

@@ -26,6 +26,12 @@ export class LetterController {
         return this.letterService.sendLetter(id, sendLetterDto);
     }
 
+    // get all letters drafted
+    @Get('drafts/:id')
+    async getAllDraftedLetters(@Param('id') authorId: string) {
+        return this.letterService.getDraftedLetters(authorId);
+    }
+
     // get all letters sent
     @Get('sent')
     async getAllSentLetters(@Param('id') authorId: string) {

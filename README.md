@@ -147,6 +147,6 @@ DevOps:
 - replace localhost placeholder domain with deployed vercel domain in deployment
 - deploy backend and db
 
-- notifications?
-- onboarding codes?
-- allow users to search between letters?
+- onboarding codes to join as someones friend or partner?
+- notifications + letter sending CRON job?
+- allow users to search/filter between letters?

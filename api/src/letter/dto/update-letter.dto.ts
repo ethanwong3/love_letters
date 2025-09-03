@@ -13,14 +13,4 @@ export class UpdateLetterDto {
   @IsUrl()
   @IsOptional()
   songUrl?: string;
-
-  @IsDate()
-  @Type(() => Date)
-  @IsOptional()
-  finishedAt?: Date;
-
-  @IsDate()
-  @Type(() => Date)
-  @IsOptional()
-  deliveryDate?: Date;
 }
