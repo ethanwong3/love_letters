@@ -38,7 +38,7 @@ describe('UserService', () => {
   describe('createUser', () => {
     it('should create a user', async () => {
       const userData = { email: 'test@example.com', passwordHash: 'hashed', displayName: 'Test User' };
-      const createdUser = { id: '1', ...userData, createdAt: new Date(), updatedAt: new Date() };
+      const createdUser = { id: '1', coupleId: null, ...userData, createdAt: new Date(), updatedAt: new Date() };
 
       jest.spyOn(prismaService.user, 'create').mockResolvedValue(createdUser);
 
@@ -51,7 +51,7 @@ describe('UserService', () => {
   describe('getUserById', () => {
     it('should return a user by ID', async () => {
       const userId = '1';
-      const user = { id: userId, email: 'test@example.com', passwordHash: 'hashed', displayName: 'Test User', createdAt: new Date(), updatedAt: new Date() };
+      const user = { id: userId, email: 'test@example.com', passwordHash: 'hashed', displayName: 'Test User', createdAt: new Date(), updatedAt: new Date(), coupleId: null };
 
       jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(user);
 
@@ -65,7 +65,7 @@ describe('UserService', () => {
     it('should update a user', async () => {
       const userId = '1';
       const updateData = { displayName: 'Updated User' };
-      const updatedUser = { id: userId, email: 'test@example.com', passwordHash: 'hashed', displayName: 'Updated User', createdAt: new Date(), updatedAt: new Date() };
+      const updatedUser = { id: userId, email: 'test@example.com', passwordHash: 'hashed', displayName: 'Updated User', createdAt: new Date(), updatedAt: new Date(), coupleId: null };
 
       jest.spyOn(prismaService.user, 'update').mockResolvedValue(updatedUser);
 
@@ -78,7 +78,7 @@ describe('UserService', () => {
   describe('deleteUser', () => {
     it('should delete a user', async () => {
       const userId = '1';
-      const deletedUser = { id: userId, email: 'test@example.com', passwordHash: 'hashed', displayName: 'Test User', createdAt: new Date(), updatedAt: new Date() };
+      const deletedUser = { id: userId, email: 'test@example.com', passwordHash: 'hashed', displayName: 'Test User', createdAt: new Date(), updatedAt: new Date(), coupleId: null };
 
       jest.spyOn(prismaService.user, 'delete').mockResolvedValue(deletedUser);
 
@@ -91,8 +91,8 @@ describe('UserService', () => {
   describe('findAll', () => {
     it('should return all users', async () => {
       const users = [
-        { id: '1', email: 'test1@example.com', passwordHash: 'hashed1', displayName: 'User 1', createdAt: new Date(), updatedAt: new Date() },
-        { id: '2', email: 'test2@example.com', passwordHash: 'hashed2', displayName: 'User 2', createdAt: new Date(), updatedAt: new Date() },
+        { id: '1', email: 'test1@example.com', passwordHash: 'hashed1', displayName: 'User 1', createdAt: new Date(), updatedAt: new Date(), coupleId: null },
+        { id: '2', email: 'test2@example.com', passwordHash: 'hashed2', displayName: 'User 2', createdAt: new Date(), updatedAt: new Date(), coupleId: null },
       ];
 
       jest.spyOn(prismaService.user, 'findMany').mockResolvedValue(users);

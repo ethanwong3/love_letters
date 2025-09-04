@@ -131,21 +131,22 @@ DevOps:
 
 - user, basic api endpoints, tested
 - auth, register and login with jwt infrastructure for token generation, validation, and guarding, tested.
-- letter, creation/updates/sending/scheudling/receiving/reading all guarded.
+- letter, creation/updates/sending/scheudling/receiving/reading all guarded, tested.
 
 # To Do (Next):
 
-- test letter module
 - implement friending / partner features within user module
-
-- token refreshes + logout feature
+- create basic ugly frontend to verify flows
 - in frontend, ensure register has password confirmation matching and secure password checks and trims json body data
-- add a basic frontend to visualise user and auth endpoints
 
 # To Do (Reminder):
 
+These are ranked by priority!
+
 - replace localhost placeholder domain with deployed vercel domain in deployment
 - deploy backend and db
+
+- token refreshes and logout feature
 
 - onboarding codes to join as someones friend or partner?
 - notifications + letter sending CRON job?
