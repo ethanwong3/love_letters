@@ -131,11 +131,11 @@ DevOps:
 
 - user, basic api endpoints, tested
 - auth, register and login with jwt infrastructure for token generation, validation, and guarding, tested.
-- letter, data model, api endpoints, dtos.
+- letter, creation/updates/sending/scheudling/receiving/reading all guarded.
 
 # To Do (Next):
 
-- implement letter feature within letter modules
+- test letter module
 - implement friending / partner features within user module
 
 - token refreshes + logout feature

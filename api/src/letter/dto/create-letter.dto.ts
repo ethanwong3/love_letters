@@ -1,12 +1,6 @@
 import { IsString, IsNotEmpty, IsOptional, IsEnum, IsDate, IsUrl } from 'class-validator';
 import { Type } from 'class-transformer';
-
-enum LetterStatus {
-  DRAFT = 'DRAFT',
-  SCHEDULED = 'SCHEDULED',
-  SENT = 'SENT',
-  OPENED = 'OPENED',
-}
+import { LetterStatus } from '@prisma/client';
 
 export class CreateLetterDto {
   @IsString()

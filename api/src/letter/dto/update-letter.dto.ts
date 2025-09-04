@@ -1,5 +1,4 @@
-import { IsDate, IsOptional, IsString, IsUrl } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class UpdateLetterDto {
   @IsString()

@@ -7,27 +7,20 @@ import {
 import { CreateLetterDto } from './dto/create-letter.dto';
 import { UpdateLetterDto } from './dto/update-letter.dto';
 import { SendLetterDto } from './dto/send-letter.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-
-// too sack to make this global, just copy pasting this lol
-enum LetterStatus {
-  DRAFT = 'DRAFT',
-  SCHEDULED = 'SCHEDULED',
-  SENT = 'SENT',
-  OPENED = 'OPENED',
-}
+import { PrismaService } from '../prisma/prisma.service';
+import { LetterStatus } from '@prisma/client';
 
 @Injectable()
 export class LetterService {
   constructor(private readonly prisma: PrismaService) {}
 
   // draft a letter
-  async createLetter(createLetterDto: CreateLetterDto) {
+  async createLetter(createLetterDto: CreateLetterDto, userId: string) {
     // create letter in db
     try {
       const letter = await this.prisma.letter.create({
         data: {
-          authorId: createLetterDto.authorId,
+          authorId: userId,
           recipientId: createLetterDto.recipientId,
           subject: createLetterDto.subject,
           content: createLetterDto.content,
@@ -42,13 +35,16 @@ export class LetterService {
   }
 
   // update a drafted letter
-  async editLetter(id: string, updateLetterDto: UpdateLetterDto) {
-    // check if letter exists and is a draft
-    const existing = await this.prisma.letter.findUnique({ where: { id } });
-    if (!existing) {
+  async editLetter(id: string, updateLetterDto: UpdateLetterDto, userId: string) {
+    // check if user is authorised, letter exists, and is a draft
+    const letter = await this.prisma.letter.findUnique({ where: { id } });
+    if (letter?.authorId !== userId) {
+      throw new ForbiddenException('You cannot edit this letter');
+    }
+    if (!letter) {
       throw new NotFoundException('Letter not found');
     }
-    if (existing.status !== LetterStatus.DRAFT) {
+    if (letter.status !== LetterStatus.DRAFT) {
       throw new ForbiddenException('Only drafts can be updated');
     }
     // update letter in db
@@ -69,13 +65,16 @@ export class LetterService {
   }
 
   // send a letter now or later
-  async sendLetter(id: string, sendLetterDto: SendLetterDto) {
-    // check if letter exists and is a draft
-    const existing = await this.prisma.letter.findUnique({ where: { id } });
-    if (!existing) {
+  async sendLetter(id: string, sendLetterDto: SendLetterDto, userId: string) {
+    // check if user is authorised, letter exists, and is a draft
+    const letter = await this.prisma.letter.findUnique({ where: { id } });
+    if (letter?.authorId !== userId) {
+      throw new ForbiddenException('You cannot send this letter');
+    }
+    if (!letter) {
       throw new NotFoundException('Letter not found');
     }
-    if (existing.status !== LetterStatus.DRAFT) {
+    if (letter.status !== LetterStatus.DRAFT) {
       throw new ForbiddenException('Only drafts can be sent');
     }
     // update letter in db and send letter to recipient
@@ -84,7 +83,7 @@ export class LetterService {
         where: { id },
         data: {
           status: sendLetterDto.deliveryDate ? LetterStatus.SCHEDULED : LetterStatus.SENT,
-          finishedAt: existing.finishedAt ?? new Date(),
+          finishedAt: letter.finishedAt ?? new Date(),
           deliveryDate: sendLetterDto.deliveryDate ?? new Date(),
         },
       });
@@ -118,6 +117,7 @@ export class LetterService {
 
   // get single letter sent
   async getSentLetterById(id: string, authorId: string) {
+    // ensure letter exists and is only being accessed by author
     const letter = await this.prisma.letter.findUnique({ where: { id } });
     if (!letter) {
       throw new NotFoundException('Letter not found');
@@ -142,6 +142,7 @@ export class LetterService {
 
   // get single letter received && mark as read
   async getReceivedLetterById(id: string, recipientId: string) {
+    // ensure letter exists and is only being accessed by recipient if it has been sent
     const letter = await this.prisma.letter.findUnique({ where: { id } });
     if (!letter) {
       throw new NotFoundException('Letter not found');
