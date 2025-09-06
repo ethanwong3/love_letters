@@ -49,6 +49,14 @@ pnpm exec prisma migrate dev
 pnpm start:dev
 curl http://localhost:4000/health/db
 
+npx create-next-app@latest
+cd client
+npx shadcn@latest init
+npx shadcn@latest add button input form card
+
+npm install framer-motion
+npm install react-icons
+
 # Structure:
 
 love_letters/
@@ -135,8 +143,6 @@ DevOps:
 
 # To Do (Next):
 
-- implement friending / partner features within user module
-- create basic ugly frontend to verify flows
 - in frontend, ensure register has password confirmation matching and secure password checks and trims json body data
 
 # To Do (Reminder):
@@ -147,6 +153,7 @@ These are ranked by priority!
 - deploy backend and db
 
 - token refreshes and logout feature
+- friending / coupling features within user module
 
 - onboarding codes to join as someones friend or partner?
 - notifications + letter sending CRON job?
