@@ -81,13 +81,91 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
 }
 
+/* Global styles for the metallic/cyber/y2k aesthetic */
 body {
-  font-family: var(--font-press-start);
-  background-color: var(--background);
-  color: var(--foreground);
-  margin: 0;
-  padding: 0;
+  font-family: 'Press Start 2P', cursive; /* Retro pixel font */
+  background-color: #1a1a1a; /* Dark background for contrast */
+  color: #f0f0f0; /* Light text for readability */
 }
+
+/* Thicker borders and shadows */
+.border-thick {
+  border-width: 4px;
+  border-style: solid;
+}
+
+.shadow-heavy {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+}
+
+/* Squared borders */
+.squared {
+  border-radius: 8px;
+}
+
+/* Pixelated star animation */
+@keyframes flash {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.pixel-star {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background-color: currentColor;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  animation: flash 1.5s infinite;
+}
+
+.pixel-star.black {
+  color: black;
+}
+
+.pixel-star.white {
+  color: white;
+}
+
+.decorative-image {
+  position: absolute;
+  width: 150px;
+  height: auto;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.decorative-image.kuromi {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(1.5); /* Center and zoom */
+  width: 100px; /* Adjust width as needed */
+  height: 100px; /* Adjust height as needed */
+  object-fit: cover; /* Ensure the image fills the area */
+  object-position: center; /* Focus on the center of the image */
+  z-index: 10; /* Ensure it appears above the card */
+  pointer-events: none; /* Prevent interaction */
+}
+
+.decorative-image.cinnamon-roll {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-radius: 50%;
+  transform: translate(50%, -50%) scale(1.5); /* Center and zoom */
+  width: 100px; /* Adjust width as needed */
+  height: 100px; /* Adjust height as needed */
+  object-fit: cover; /* Ensure the image fills the area */
+  object-position: center; /* Focus on the center of the image */
+  z-index: 10; /* Ensure it appears above the card */
+  pointer-events: none; /* Prevent interaction */}
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-vt323);

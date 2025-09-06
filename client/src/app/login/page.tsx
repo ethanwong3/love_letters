@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
+import PixelStars from "../../components/ui/pixelStars";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -29,46 +30,49 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200">
-      <div className="w-full max-w-md bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 border-4 border-pink-300 relative">
-        
-        {/* Sanrio Sticker Decoration */}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F8B7D4] via-[#F3CFE6] to-[#A28CC5] relative overflow-hidden">
+      <PixelStars color="black" />
+      <div className="relative">
         <img
-          src="/assets/hello-kitty.png"
-          alt="Hello Kitty Sticker"
-          className="absolute -top-10 -left-10 w-20 h-20 drop-shadow-lg"
+          src="/kuromi.jpeg"
+          alt="kuromi"
+          className="decorative-image kuromi shadow-heavy border-thick border-purple-400 rounded-lg"
         />
+        <div className="w-full max-w-md bg-white/90 backdrop-blur-md squared shadow-heavy p-6 border-thick border-purple-400 relative">
+          <h2 className="text-4xl font-bold text-center text-purple-600 mb-8 tracking-wide">
+            ✧ LOGIN ✧
+          </h2>
 
-        <h2 className="text-3xl font-bold text-center text-pink-600 drop-shadow-sm mb-6">
-          ✧ Login ✧
-        </h2>
+          <form onSubmit={handleLogin} className="flex flex-col gap-6">
+            <input
+              type="email"
+              placeholder="Email"
+              className="p-3 squared border-thick border-purple-200 focus:outline-none focus:ring-4 focus:ring-pink-300 bg-white/80 text-purple-600 placeholder-purple-400 text-base"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              className="p-3 squared border-thick border-purple-200 focus:outline-none focus:ring-4 focus:ring-pink-300 bg-white/80 text-purple-600 placeholder-purple-400 text-base"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="submit"
+              className="p-3 squared bg-gradient-to-r from-[#F8B7D4] to-[#A28CC5] text-white font-bold text-base shadow-md hover:shadow-lg hover:scale-105 transition-transform duration-200"
+            >
+              ♥ Login ♥
+            </button>
+          </form>
 
-        <form onSubmit={handleLogin} className="flex flex-col gap-4">
-          <input
-            type="email"
-            placeholder="Email"
-            className="p-3 rounded-full border-2 border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white/70"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="p-3 rounded-full border-2 border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white/70"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button className="p-3 rounded-full bg-gradient-to-r from-pink-400 to-purple-400 text-white font-semibold shadow-md hover:shadow-lg hover:scale-105 transition-transform">
-            Login ❤
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm">
-          Don’t have an account?{" "}
-          <a href="/register" className="text-purple-600 underline hover:text-pink-600">
-            Register here
-          </a>
-        </p>
+          <p className="text-center text-base text-purple-500 mt-8">
+            Don't have an account?{" "}
+            <a href="/register" className="text-pink-400 underline hover:text-pink-600">
+              Sign up here
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );

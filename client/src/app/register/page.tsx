@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
+import PixelStars from "../../components/ui/pixelStars";
 
 export default function RegisterPage() {
   const { login } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,53 +31,56 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-200 via-pink-200 to-rose-200">
-      <div className="w-full max-w-md bg-white/85 backdrop-blur-md rounded-2xl shadow-2xl p-8 border-4 border-purple-300 relative">
-        
-        {/* Sanrio Sticker Decoration */}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#B3D9F7] via-[#F3CFE6] to-[#F8B7D4] relative overflow-hidden">
+      <PixelStars color="white" />
+      <div className="relative">
         <img
-          src="/assets/cinnamoroll.png"
-          alt="Cinnamoroll Sticker"
-          className="absolute -top-12 -right-10 w-24 h-24 drop-shadow-lg"
+          src="/cinnamonroll.jpeg"
+          alt="Cinnamon Roll"
+          className="decorative-image cinnamon-roll shadow-heavy border-thick border-blue-400 rounded-lg"
         />
+        <div className="w-full max-w-md bg-white/90 backdrop-blur-md squared shadow-heavy p-6 border-thick border-blue-400 relative">
+          <h2 className="text-4xl font-bold text-center text-blue-600 mb-8 tracking-wide">
+            ✧ REGISTER ✧
+          </h2>
 
-        <h2 className="text-3xl font-bold text-center text-purple-600 drop-shadow-sm mb-6">
-          ✧ Register ✧
-        </h2>
+          <form onSubmit={handleRegister} className="flex flex-col gap-6">
+            <input
+              type="text"
+              placeholder="Display Name"
+              className="p-3 squared border-thick border-blue-200 focus:outline-none focus:ring-4 focus:ring-pink-300 bg-white/80 text-blue-600 placeholder-blue-400 text-base"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              className="p-3 squared border-thick border-blue-200 focus:outline-none focus:ring-4 focus:ring-pink-300 bg-white/80 text-blue-600 placeholder-blue-400 text-base"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              className="p-3 squared border-thick border-blue-200 focus:outline-none focus:ring-4 focus:ring-pink-300 bg-white/80 text-blue-600 placeholder-blue-400 text-base"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="submit"
+              className="p-3 squared bg-gradient-to-r from-[#B3D9F7] to-[#F8B7D4] text-white font-bold text-base shadow-md hover:shadow-lg hover:scale-105 transition-transform duration-200"
+            >
+              ♥ Register ♥
+            </button>
+          </form>
 
-        <form onSubmit={handleRegister} className="flex flex-col gap-4">
-          <input
-            type="text"
-            placeholder="Username"
-            className="p-3 rounded-xl border-2 border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/70 shadow-sm"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            className="p-3 rounded-xl border-2 border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/70 shadow-sm"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="p-3 rounded-xl border-2 border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/70 shadow-sm"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button className="p-3 rounded-xl bg-gradient-to-r from-purple-400 to-pink-400 text-white font-semibold shadow-md hover:shadow-lg hover:scale-105 transition-transform">
-            Register ☆
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm">
-          Already have an account?{" "}
-          <a href="/login" className="text-pink-600 underline hover:text-purple-600">
-            Login here
-          </a>
-        </p>
+          <p className="text-center text-base text-blue-500 mt-8">
+            Already have an account?{" "}
+            <a href="/login" className="text-pink-400 underline hover:text-pink-600">
+              Login here
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
