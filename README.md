@@ -140,10 +140,13 @@ DevOps:
 - user, basic api endpoints, tested
 - auth, register and login with jwt infrastructure for token generation, validation, and guarding, tested.
 - letter, creation/updates/sending/scheudling/receiving/reading all guarded, tested.
+- frontend done auth pages
 
 # To Do (Next):
 
 - in frontend, ensure register has password confirmation matching and secure password checks and trims json body data
+- in frontend, replace alert errors in auth
+- in frontend, implement SPA inbox with profile overlay, inbox, and letter writing feature
 
 # To Do (Reminder):
 
