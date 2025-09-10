@@ -146,7 +146,7 @@ export default function RegisterPage() {
               </div>
               <div className="w-full">
                 <input
-                  type="passwordConfirm"
+                  type="password"
                   placeholder="Confirm your password"
                   className="w-full p-3 squared border-thick border-blue-200 focus:outline-none focus:ring-4 focus:ring-pink-300 bg-white/80 text-blue-600 placeholder-blue-400 text-base"
                   value={passwordConfirm}
