@@ -52,7 +52,7 @@ export default function Home() {
     >
       <div className="flex items-center justify-center h-full">
         {/* Onboarding Popup */}
-        {showOnboarding && (
+        {showOnboarding && user.email !== 'lynettenhan7@gmail.com' && (
           <div
             className="fixed inset-0 flex items-center justify-center z-50"
             style={{
@@ -64,7 +64,7 @@ export default function Home() {
             <div
               className="retro-popup w-11/12 max-w-xl"
               style={{
-                backgroundColor: "#c0c0c0", // classic gray
+                backgroundColor: "#c0c0c0",
                 border: "2px solid #000",
                 boxShadow: "6px 6px 0px rgba(0,0,0,0.6)",
                 fontFamily: "Tahoma, Verdana, sans-serif",
@@ -174,15 +174,20 @@ export default function Home() {
         <div
           className="relative flex flex-col items-center"
           style={{
-            backgroundColor: "#fdf5e6", // Off-white yellowish retro color
-            border: "20px solid #e0e0e0",
+            backgroundColor: isDarkMode ? "#2b2b2b" : "#fdf5e6",
+            border: `20px solid ${isDarkMode ? "#4a4a4a" : "#e0e0e0"}`,
             borderRadius: "12px",
-            boxShadow: `
-              inset -8px -8px 16px rgba(0,0,0,0.2),
-              8px 8px 20px rgba(0,0,0,0.4)
-            `,
+            boxShadow: isDarkMode
+              ? `
+                inset -8px -8px 16px rgba(255,255,255,0.1),
+                8px 8px 20px rgba(0,0,0,0.6)
+              `
+              : `
+                inset -8px -8px 16px rgba(0,0,0,0.2),
+                8px 8px 20px rgba(0,0,0,0.4)
+              `,
             padding: "16px",
-            transform: "scale(1.4, 1.3)", // Scaled larger
+            transform: "scale(1.4, 1.3)",
           }}
         >
           {/* Screen */}
@@ -191,7 +196,7 @@ export default function Home() {
             style={{
               width: "600px",
               height: "450px",
-              backgroundColor: isDarkMode ? "#001f3f" : "#dff9fb", // Dark blue for dark mode, light blue for light mode
+              backgroundColor: isDarkMode ? "#001f3f" : "#dff9fb",
               border: "12px solid #111",
               color: isDarkMode ? "#00ff00" : "#000",
               fontSize: "28px",
