@@ -4,14 +4,19 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
+import Write from "../components/write";
+import Letters from "../components/letters";
+import Inbox from "../components/inbox";
+import Profile from "../components/profile";
 
 export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
-  const [showOnboarding, setShowOnboarding] = useState(true);
-  const closeOnboarding = () => setShowOnboarding(false);
+
+  // Track open windows and focus order
+  const [windows, setWindows] = useState<string[]>([]); // stack of window IDs
 
   useEffect(() => {
     if (!user) {
@@ -23,21 +28,33 @@ export default function Home() {
     const handleMouseMove = (e: MouseEvent) => {
       setCursorPosition({ x: e.clientX, y: e.clientY });
     };
-
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   if (!user) return null;
 
-  const toggleDarkMode = () => {
-    setIsDarkMode((prev) => !prev);
-  };
+  const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
 
   const calculateBackgroundPosition = () => {
     const x = (cursorPosition.x / window.innerWidth) * 100;
     const y = (cursorPosition.y / window.innerHeight) * 100;
     return `${50 - x / 2}% ${50 - y / 2}%`;
+  };
+
+  // Window helpers
+  const openWindow = (id: string) => {
+    setWindows((prev) =>
+      prev.includes(id) ? [...prev.filter((w) => w !== id), id] : [...prev, id]
+    );
+  };
+
+  const closeWindow = (id: string) => {
+    setWindows((prev) => prev.filter((w) => w !== id));
+  };
+
+  const focusWindow = (id: string) => {
+    setWindows((prev) => [...prev.filter((w) => w !== id), id]);
   };
 
   return (
@@ -51,125 +68,6 @@ export default function Home() {
       }}
     >
       <div className="flex items-center justify-center h-full">
-        {/* Onboarding Popup */}
-        {showOnboarding && user.email !== 'lynettenhan7@gmail.com' && (
-          <div
-            className="fixed inset-0 flex items-center justify-center z-50"
-            style={{
-              backdropFilter: "blur(8px)",
-              backgroundColor: "rgba(0, 0, 0, 0.4)",
-            }}
-            onClick={closeOnboarding}
-          >
-            <div
-              className="retro-popup w-11/12 max-w-xl"
-              style={{
-                backgroundColor: "#c0c0c0",
-                border: "2px solid #000",
-                boxShadow: "6px 6px 0px rgba(0,0,0,0.6)",
-                fontFamily: "Tahoma, Verdana, sans-serif",
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Title Bar */}
-              <div
-                className="flex justify-between items-center px-2 py-1"
-                style={{
-                  backgroundColor: "#000080",
-                  color: "white",
-                  fontWeight: "bold",
-                  fontSize: "14px",
-                }}
-              >
-                <span>System Notice</span>
-                <button
-                  onClick={closeOnboarding}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "red";
-                    e.currentTarget.style.borderColor = "red";
-                    e.currentTarget.style.color = "#fff";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#c0c0c0";
-                    e.currentTarget.style.borderColor = "#fff";
-                    e.currentTarget.style.color = "#000";
-                  }}
-                  style={{
-                    backgroundColor: "#c0c0c0",
-                    border: "2px outset #fff",
-                    width: "20px",
-                    height: "20px",
-                    lineHeight: "16px",
-                    fontWeight: "bold",
-                    color: "#000",
-                    cursor: "pointer",
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-
-              {/* Body */}
-              <div className="flex p-6 gap-6">
-                {/* Cat Image */}
-                <div className="flex items-center justify-center">
-                  <img
-                    src="/cat7.jpeg"
-                    alt="Cat"
-                    className="w-40 h-40 object-cover border border-black"
-                  />
-                </div>
-
-                {/* Text */}
-                <div className="flex-1 text-sm text-black leading-relaxed">
-                  <p className="mb-4">
-                    Hey <strong>{user.displayName}</strong>! <br />
-                    <br />
-                    Welcome to <em>love_letters</em>, your online letterbox. I was made as
-                    a gift for lyn so that she can read all the letters her friends and
-                    family have written for her.
-                  </p>
-                  <p>
-                    When you close this message, you’ll find icons to write, edit, send, and
-                    personalise letters with music and photos. Don’t forget to send them to
-                    the user named{" "}
-                    <em>
-                      <span className="text-pink-500">lyn</span>
-                    </em>
-                    !
-                  </p>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="flex justify-center p-4 pt-0">
-                <button
-                  onClick={closeOnboarding}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#a9a9a9";
-                    e.currentTarget.style.borderColor = "#ddd";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#c0c0c0";
-                    e.currentTarget.style.borderColor = "#fff";
-                  }}
-                  style={{
-                    backgroundColor: "#c0c0c0",
-                    border: "2px outset #fff",
-                    padding: "4px 16px",
-                    fontWeight: "bold",
-                    fontSize: "14px",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Retro Computer */}
         <div
           className="relative flex flex-col items-center"
@@ -192,14 +90,14 @@ export default function Home() {
         >
           {/* Screen */}
           <div
-            className="flex items-center justify-center"
+            className="relative flex flex-col items-center justify-center gap-4"
             style={{
               width: "600px",
               height: "450px",
               backgroundColor: isDarkMode ? "#001f3f" : "#dff9fb",
               border: "12px solid #111",
               color: isDarkMode ? "#00ff00" : "#000",
-              fontSize: "28px",
+              fontSize: "20px",
               fontWeight: "bold",
               textAlign: "center",
               boxShadow: `
@@ -208,7 +106,35 @@ export default function Home() {
               `,
             }}
           >
-            love_letters
+            <div className="mb-2">love_letters</div>
+
+            {/* Four Icons */}
+            <div className="grid grid-cols-2 gap-6">
+              <button
+                onClick={() => openWindow("Write")}
+                className="p-4 bg-white border rounded shadow hover:bg-gray-100"
+              >
+                Icon 1
+              </button>
+              <button
+                onClick={() => openWindow("Letters")}
+                className="p-4 bg-white border rounded shadow hover:bg-gray-100"
+              >
+                Icon 2
+              </button>
+              <button
+                onClick={() => openWindow("Inbox")}
+                className="p-4 bg-white border rounded shadow hover:bg-gray-100"
+              >
+                Icon 3
+              </button>
+              <button
+                onClick={() => openWindow("Profile")}
+                className="p-4 bg-white border rounded shadow hover:bg-gray-100"
+              >
+                Icon 4
+              </button>
+            </div>
           </div>
 
           {/* Slot below screen (Toggle Button) */}
@@ -241,6 +167,36 @@ export default function Home() {
           </button>
         </div>
       </div>
+
+      {/* Render Windows */}
+      {windows.includes("Write") && (
+        <Write
+          isFocused={windows[windows.length - 1] === "Write"}
+          onClose={() => closeWindow("Write")}
+          onFocus={() => focusWindow("Write")}
+        />
+      )}
+      {windows.includes("Letters") && (
+        <Letters
+          isFocused={windows[windows.length - 1] === "Letters"}
+          onClose={() => closeWindow("Letters")}
+          onFocus={() => focusWindow("Letters")}
+        />
+      )}
+      {windows.includes("Inbox") && (
+        <Inbox
+          isFocused={windows[windows.length - 1] === "Inbox"}
+          onClose={() => closeWindow("Inbox")}
+          onFocus={() => focusWindow("Inbox")}
+        />
+      )}
+      {windows.includes("Profile") && (
+        <Profile
+          isFocused={windows[windows.length - 1] === "Profile"}
+          onClose={() => closeWindow("Profile")}
+          onFocus={() => focusWindow("Profile")}
+        />
+      )}
     </div>
   );
 }
