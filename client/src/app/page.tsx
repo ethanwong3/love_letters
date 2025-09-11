@@ -62,36 +62,110 @@ export default function Home() {
             onClick={closeOnboarding}
           >
             <div
-              className="retro-modal w-11/12 max-w-lg p-6 relative"
+              className="retro-popup w-11/12 max-w-xl"
               style={{
-                backgroundColor: "#000",
-                border: "8px solid #333",
-                boxShadow: `
-                  inset -6px -6px 12px rgba(0, 0, 0, 0.8),
-                  6px 6px 16px rgba(0, 0, 0, 0.6),
-                  -6px -6px 12px rgba(255, 255, 255, 0.2)
-                `,
-                borderRadius: "12px",
-                transform: "scale(1.05)",
+                backgroundColor: "#c0c0c0", // classic gray
+                border: "2px solid #000",
+                boxShadow: "6px 6px 0px rgba(0,0,0,0.6)",
+                fontFamily: "Tahoma, Verdana, sans-serif",
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <button
-                className="absolute top-2 right-2 text-lg font-bold text-gray-700 hover:text-red-500"
-                onClick={closeOnboarding}
+              {/* Title Bar */}
+              <div
+                className="flex justify-between items-center px-2 py-1"
+                style={{
+                  backgroundColor: "#000080",
+                  color: "white",
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                }}
               >
-                X
-              </button>
-              <p className="text-lg leading-relaxed text-center">
-                Hey
-                <span className="rainbow-text">{user.displayName}</span>, welcome
-                to <strong>love_letters</strong>, your online letterbox. I was
-                made as a gift for lyn so that she can read all the letters that her friends and family have written to her.
-                When you close this message, you will find that the icons
-                displayed let you write, edit, send, and personalise letters
-                with music and photos. Don't forget to send them to{" "}
-                <span className="rainbow-text">lyn</span>!
-              </p>
+                <span>System Notice</span>
+                <button
+                  onClick={closeOnboarding}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "red";
+                    e.currentTarget.style.borderColor = "red";
+                    e.currentTarget.style.color = "#fff";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#c0c0c0";
+                    e.currentTarget.style.borderColor = "#fff";
+                    e.currentTarget.style.color = "#000";
+                  }}
+                  style={{
+                    backgroundColor: "#c0c0c0",
+                    border: "2px outset #fff",
+                    width: "20px",
+                    height: "20px",
+                    lineHeight: "16px",
+                    fontWeight: "bold",
+                    color: "#000",
+                    cursor: "pointer",
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="flex p-6 gap-6">
+                {/* Cat Image */}
+                <div className="flex items-center justify-center">
+                  <img
+                    src="/cat7.jpeg"
+                    alt="Cat"
+                    className="w-40 h-40 object-cover border border-black"
+                  />
+                </div>
+
+                {/* Text */}
+                <div className="flex-1 text-sm text-black leading-relaxed">
+                  <p className="mb-4">
+                    Hey <strong>{user.displayName}</strong>! <br />
+                    <br />
+                    Welcome to <em>love_letters</em>, your online letterbox. I was made as
+                    a gift for lyn so that she can read all the letters her friends and
+                    family have written for her.
+                  </p>
+                  <p>
+                    When you close this message, you’ll find icons to write, edit, send, and
+                    personalise letters with music and photos. Don’t forget to send them to
+                    the user named{" "}
+                    <em>
+                      <span className="text-pink-500">lyn</span>
+                    </em>
+                    !
+                  </p>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex justify-center p-4 pt-0">
+                <button
+                  onClick={closeOnboarding}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#a9a9a9";
+                    e.currentTarget.style.borderColor = "#ddd";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#c0c0c0";
+                    e.currentTarget.style.borderColor = "#fff";
+                  }}
+                  style={{
+                    backgroundColor: "#c0c0c0",
+                    border: "2px outset #fff",
+                    padding: "4px 16px",
+                    fontWeight: "bold",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  OK
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -129,8 +203,7 @@ export default function Home() {
               `,
             }}
           >
-            {/* Content inside the screen */}
-            {isDarkMode ? "Y2K Dark Mode" : "Y2K Light Mode"}
+            love_letters
           </div>
 
           {/* Slot below screen (Toggle Button) */}
@@ -163,34 +236,6 @@ export default function Home() {
           </button>
         </div>
       </div>
-
-      <style jsx>{`
-        .rainbow-text {
-          font-weight: bold;
-          background: linear-gradient(
-            90deg,
-            red,
-            orange,
-            yellow,
-            green,
-            blue,
-            indigo,
-            violet
-          );
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          animation: rainbow 3s linear infinite;
-        }
-
-        @keyframes rainbow {
-          0% {
-            background-position: 0%;
-          }
-          100% {
-            background-position: 100%;
-          }
-        }
-      `}</style>
     </div>
   );
 }
