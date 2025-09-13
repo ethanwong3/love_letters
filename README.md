@@ -151,6 +151,10 @@ DevOps:
 - in frontend create letters popup and connect to letter update, letter send, and letter read
 - in frontend create inbox pop up and create to letter read and letter update
 
+- FIXES
+- possible issues with time stamps
+- need to figure out how to do music
+
 # To Do (Reminder):
 
 These are ranked by priority!

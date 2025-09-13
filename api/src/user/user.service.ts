@@ -13,12 +13,8 @@ export class UserService {
   }
 
   // handles GET /user/:id endpoint logic
-  async getUserByName(name: string) {
-    return this.prisma.user.findMany({
-      where: {
-        displayName: name,
-      }
-    });
+  async getUserById(id: string) {
+    return this.prisma.user.findUnique({ where: { id } });
   }
   
   // handles PATCH /user/:id endpoint logic
@@ -34,5 +30,17 @@ export class UserService {
   // get all users
   async findAll() {
     return this.prisma.user.findMany();
+  }
+
+  // search users
+  async searchUsers(name: string) {
+    return this.prisma.user.findMany({
+      where: {
+        displayName: {
+          contains: name,
+          mode: 'insensitive',
+        },
+      },
+    });
   }
 }

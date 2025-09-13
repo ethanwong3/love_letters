@@ -21,8 +21,8 @@ export class UserController {
 		// map this method to GET /user/:id endpoint
     @Get(':id')
 		// extracts the id parameter from the URL
-    async getUser(@Param('id') id: string) {
-        return this.userService.getUserByName(id);
+    async getUserById(@Param('id') id: string) {
+        return this.userService.getUserById(id);
     }
 
 		// map this method to PATCH /user/:id endpoint
@@ -43,5 +43,11 @@ export class UserController {
     @Get()
     findAll() {
       return this.userService.findAll();
+    }
+
+    // search users by name
+    @Get('search/:name')
+    async searchUsers(@Param('name') name: string) {
+      return this.userService.searchUsers(name);
     }
 }
