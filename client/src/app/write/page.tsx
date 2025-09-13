@@ -1,53 +1,45 @@
 "use client";
+import { useState } from "react";
+import RecipientSearch from "./components/RecipientSearch";
+import LetterEditor from "./components/LetterEditor";
+import ScheduleSend from "./components/ScheduleSend";
+import Confirmation from "./components/Confirmation";
+import type { User } from "@/types/user";
+import type { Letter } from "@/types/letter";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-
-export default function Write() {
-  const router = useRouter();
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("isDarkMode");
-      setIsDarkMode(stored === "true");
-    } catch {
-      setIsDarkMode(false);
-    }
-  }, []);
-
-  const bg = isDarkMode ? "#001f3f" : "#dff9fb";
-  const text = isDarkMode ? "#00ff00" : "#000";
+export default function WritePage() {
+  const [step, setStep] = useState<"search" | "editor" | "schedule" | "done">(
+    "search"
+  );
+  const [recipient, setRecipient] = useState<User | null>(null);
+  const [letter, setLetter] = useState<Letter | null>(null);
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: bg,
-        color: text,
-        display: "flex",
-        alignItems: "flex-start",
-        justifyContent: "center",
-        paddingTop: 36,
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: 1000, padding: "0 20px" }}>
-        <button
-          onClick={() => router.push("/")}
-          style={{
-            background: "rgba(255,255,255,0.95)",
-            border: "2px solid #111",
-            padding: "8px 14px",
-            borderRadius: 6,
-            cursor: "pointer",
-            fontWeight: 700,
+    <div className="max-w-3xl mx-auto py-8">
+      {step === "search" && (
+        <RecipientSearch
+          onSelect={(user) => {
+            setRecipient(user);
+            setStep("editor");
           }}
-        >
-          ← Back
-        </button>
-
-        {/* Page is intentionally minimal for now */}
-      </div>
+        />
+      )}
+      {step === "editor" && recipient && (
+        <LetterEditor
+          recipient={recipient}
+          onDraft={(draft) => {
+            setLetter(draft);
+            setStep("schedule");
+          }}
+        />
+      )}
+      {step === "schedule" && letter && (
+        <ScheduleSend
+          letter={letter}
+          onFinish={() => setStep("done")}
+        />
+      )}
+      {step === "done" && <Confirmation />}
     </div>
   );
 }

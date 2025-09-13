@@ -155,6 +155,11 @@ DevOps:
 - possible issues with time stamps
 - need to figure out how to do music
 
+- FRONTEND (WRITE)
+- x in search
+- enter to search
+- exclude self in search
+
 # To Do (Reminder):
 
 These are ranked by priority!
