@@ -19,9 +19,9 @@ export class CreateLetterDto {
   @IsNotEmpty()
   content: string;
 
-  @IsUrl()
   @IsOptional()
-  songUrl?: string;
+  @IsUrl()
+  songUrl?: string | null;
 
   @IsEnum(LetterStatus)
   @IsOptional()

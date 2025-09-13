@@ -86,7 +86,7 @@ export default function RegisterPage() {
 
     const data = await res.json();
     if (res.ok) {
-      login(data.access_token, data.user);
+      login(data.token, data.user);
       router.push("/");
     } else {
       //alert(data.message || "Registration failed");

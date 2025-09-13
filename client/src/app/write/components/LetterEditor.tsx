@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import type { User } from "@/types/user";
 import type { Letter } from "@/types/letter";
@@ -10,19 +11,26 @@ interface Props {
 }
 
 export default function LetterEditor({ recipient, onDraft }: Props) {
+  const { user } = useAuth();
   const [subject, setSubject] = useState("");
   const [content, setContent] = useState("");
   const [songUrl, setSongUrl] = useState("");
 
   async function handleDraft() {
+    const body: any = {
+      authorId: user.id,
+      recipientId: recipient.id,
+      content,
+    };
+
+    // Add optional fields only if they are not null or empty
+    if (subject) body.subject = subject;
+    if (songUrl) body.songUrl = songUrl;
+    body.status = "DRAFT"; // Always include status
+
     const draft = await apiFetch<Letter>(`/letter`, {
       method: "POST",
-      body: JSON.stringify({
-        recipientId: recipient.id,
-        subject,
-        content,
-        songUrl,
-      }),
+      body: JSON.stringify(body),
     });
     onDraft(draft);
   }
