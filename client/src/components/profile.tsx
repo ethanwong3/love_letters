@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Rnd } from "react-rnd";
 
-export default function Profile({
+export default function Inbox({
   isFocused,
   onClose,
   onFocus,
@@ -35,7 +35,7 @@ export default function Profile({
     >
       <div className="flex flex-col h-full">
         <div className="flex justify-between items-center bg-blue-800 text-white px-2 py-1 cursor-default">
-          <span>Write</span>
+          <span>Inbox</span>
           <button
             onClick={(e) => {
               e.stopPropagation();

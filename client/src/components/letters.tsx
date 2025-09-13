@@ -35,7 +35,7 @@ export default function Letters({
     >
       <div className="flex flex-col h-full">
         <div className="flex justify-between items-center bg-blue-800 text-white px-2 py-1 cursor-default">
-          <span>Write</span>
+          <span>Letters</span>
           <button
             onClick={(e) => {
               e.stopPropagation();

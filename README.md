@@ -56,6 +56,7 @@ npx shadcn@latest add button input form card
 
 npm install framer-motion
 npm install react-icons
+npm install react-rmd
 
 # Structure:
 
@@ -144,8 +145,11 @@ DevOps:
 
 # To Do (Next):
 
-- in frontend register, implement secure password checks
-- in frontend, implement SPA inbox with profile overlay, inbox, and letter writing feature
+- structure: inbox makes pc go to a new page and open draggable and resizeable windows for each letter / write has a cute screen / lettersis same as inbox, profile opens incomplete popup
+- in frontend create placeholder popup for profile
+- in frontend create write pop up and connect to letter creation and letter send
+- in frontend create letters popup and connect to letter update, letter send, and letter read
+- in frontend create inbox pop up and create to letter read and letter update
 
 # To Do (Reminder):
 
