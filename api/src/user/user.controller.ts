@@ -21,8 +21,8 @@ export class UserController {
 		// map this method to GET /user/:id endpoint
     @Get(':id')
 		// extracts the id parameter from the URL
-    async getUserById(@Param('id') id: string) {
-        return this.userService.getUserById(id);
+    async getUser(@Param('id') id: string) {
+        return this.userService.getUserByName(id);
     }
 
 		// map this method to PATCH /user/:id endpoint

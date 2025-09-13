@@ -13,8 +13,12 @@ export class UserService {
   }
 
   // handles GET /user/:id endpoint logic
-  async getUserById(id: string) {
-    return this.prisma.user.findUnique({ where: { id } });
+  async getUserByName(name: string) {
+    return this.prisma.user.findMany({
+      where: {
+        displayName: name,
+      }
+    });
   }
   
   // handles PATCH /user/:id endpoint logic
