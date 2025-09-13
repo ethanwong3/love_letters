@@ -43,8 +43,4 @@ export class UserService {
       },
     });
   }
-
-  async letters() {
-    return this.prisma.letter.findMany();
-  }
 }
