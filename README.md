@@ -160,6 +160,7 @@ DevOps:
 - add in photo option
 - do not allow save draft & continue to occur if content is empty
 - combine letter editor and send scheduler 
+- Dear [recipient.displayName] ... Love [author.displayName] prefill with a cute paragraph placeholder in the middle
 
 - FRONTEND (INBOX)
 - center letters in grid that does not start rowing at center
