@@ -42,7 +42,7 @@ export class UserController {
     // get all users
     @Get()
     findAll() {
-      return this.userService.letters();
+      return this.userService.findAll();
     }
 
     // search users by name

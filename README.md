@@ -145,20 +145,28 @@ DevOps:
 
 # To Do (Next):
 
-- structure: inbox makes pc go to a new page and open draggable and resizeable windows for each letter / write has a cute screen / lettersis same as inbox, profile opens incomplete popup
-- in frontend create placeholder popup for profile
-- in frontend create write pop up and connect to letter creation and letter send
-- in frontend create letters popup and connect to letter update, letter send, and letter read
-- in frontend create inbox pop up and create to letter read and letter update
-
 - FIXES
-- possible issues with time stamps
-- need to figure out how to do music
+- possible issues with time stamps, can only tell when scheduled one is set to deliver
+- need to figure out how to do music and photos
+- need to redesign inbox and write functionalities before considering letters and profile
+
+- FRONTEND (HOME)
+- hover effects
+- change to only write and inbox buttons, add home button and profile button to bottom right in same row as light mode toggle
 
 - FRONTEND (WRITE)
-- x in search
-- enter to search
-- exclude self in search
+- x in search | enter to search | exclude self in search
+- move song option at the top, maybe include album cover too
+- add in photo option
+- do not allow save draft & continue to occur if content is empty
+- combine letter editor and send scheduler 
+
+- FRONTEND (INBOX)
+- center letters in grid that does not start rowing at center
+- allow for filter to unread
+- add deliverydate below
+- add audio player at top and make it work, add photo somewhere too
+- fix formatting, new lines should work.
 
 # To Do (Reminder):
 

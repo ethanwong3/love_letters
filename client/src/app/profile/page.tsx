@@ -18,6 +18,12 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#F8B7D4] via-[#F3CFE6] to-[#A28CC5] p-8">
+      <button
+        onClick={() => router.push("/")}
+        className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      >
+        Back to Homepage
+      </button>
       <h1 className="text-3xl font-bold text-purple-600 mb-6">
         Profile
       </h1>
