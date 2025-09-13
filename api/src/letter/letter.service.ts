@@ -133,7 +133,6 @@ export class LetterService {
     return this.prisma.letter.findMany({
       where: {
         recipientId,
-        status: LetterStatus.SENT,
         deliveryDate: { lte: new Date() },
       },
       orderBy: { deliveryDate: 'desc' },
@@ -150,7 +149,7 @@ export class LetterService {
     if (letter.recipientId !== recipientId) {
       throw new ForbiddenException('You cannot access this letter');
     }
-    if (letter.status !== LetterStatus.SENT) {
+    if (letter.status === LetterStatus.DRAFT) {
       throw new ForbiddenException('WTF, you should not be seeing this letter, it is unsent');
     }
     if (letter.deliveryDate && letter.deliveryDate > new Date()) {
