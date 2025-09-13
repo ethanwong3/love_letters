@@ -1,33 +1,43 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
-import PopupWrite from "../components/write";
-import PopupLetters from "../components/letters";
-import PopupInbox from "../components/inbox";
-import PopupProfile from "../components/profile";
 
 export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
-  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isZooming, setIsZooming] = useState(false);
+  const navTargetRef = useRef<string | null>(null);
 
-  // Popups state
-  const [openPopups, setOpenPopups] = useState<string[]>([]);
-  const [focusedPopup, setFocusedPopup] = useState<string | null>(null);
+  const closeOnboarding = () => {
+    setShowOnboarding(false)
+    localStorage.setItem("onboardingShown", "true");
+  };
 
-  const closeOnboarding = () => setShowOnboarding(false);
-
+  // redirect to login if not authenticated and show onboarding if first time
   useEffect(() => {
     if (!user) {
       router.push("/login");
+    } else {
+      const onboardingShown = localStorage.getItem("onboardingShown");
+      if (!onboardingShown) {
+        setShowOnboarding(true);
+      }
     }
   }, [user, router]);
 
+  // initialise dark mode from localStorage
+  useEffect(() => {
+    const stored = typeof window !== "undefined" && localStorage.getItem("isDarkMode");
+    if (stored !== null) setIsDarkMode(stored === "true");
+  }, []);
+
+  // track cursor position for background parallax effect
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setCursorPosition({ x: e.clientX, y: e.clientY });
@@ -40,7 +50,14 @@ export default function Home() {
   if (!user) return null;
 
   const toggleDarkMode = () => {
-    setIsDarkMode((prev) => !prev);
+    setIsDarkMode((prev) => {
+      const next = !prev;
+      // persist choice so routed pages can read it
+      try {
+        localStorage.setItem("isDarkMode", String(next));
+      } catch {}
+      return next;
+    });
   };
 
   const calculateBackgroundPosition = () => {
@@ -49,26 +66,25 @@ export default function Home() {
     return `${50 - x / 2}% ${50 - y / 2}%`;
   };
 
-  // Open a popup and set focus
-  const handleOpenPopup = (popup: string) => {
-    if (!openPopups.includes(popup)) {
-      setOpenPopups((prev) => [...prev, popup]);
-    }
-    setFocusedPopup(popup);
+  // handle navigation with zoom animation
+  const handleNavigate = (path: "/write" | "/letters" | "/inbox" | "/profile") => {
+    // guard: if already zooming, ignore
+    if (isZooming) return;
+
+    navTargetRef.current = path;
+    setIsZooming(true);
+
+    // duration must match CSS transition below (400ms)
+    window.setTimeout(() => {
+      router.push(path);
+    }, 800);
   };
 
-  // Close a popup
-  const handleClosePopup = (popup: string) => {
-    setOpenPopups((prev) => prev.filter((p) => p !== popup));
-    if (focusedPopup === popup) {
-      setFocusedPopup(null);
-    }
-  };
-
-  // Shift focus when clicking on a popup
-  const handleFocusPopup = (popup: string) => {
-    setFocusedPopup(popup);
-  };
+  // screen styles
+  const screenWidth = 600;
+  const screenHeight = 450;
+  const popupWidth = Math.round(screenWidth * 0.8); // 80% (used previously)
+  const popupHeight = Math.round(screenHeight * 0.8);
 
   return (
     <div
@@ -81,7 +97,7 @@ export default function Home() {
       }}
     >
       <div className="flex items-center justify-center h-full">
-        {/* Onboarding Popup */}
+        {/* Onboarding Popup (unchanged) */}
         {showOnboarding && user.email !== "lynettenhan7@gmail.com" && (
           <div
             className="fixed inset-0 flex items-center justify-center z-50"
@@ -222,10 +238,11 @@ export default function Home() {
         >
           {/* Screen */}
           <div
-            className="relative flex items-center justify-center"
+            // apply a zooming transform when isZooming === true; transition duration matches setTimeout
+            className="relative flex flex-col items-center justify-center"
             style={{
-              width: "600px",
-              height: "450px",
+              width: `${screenWidth}px`,
+              height: `${screenHeight}px`,
               backgroundColor: isDarkMode ? "#001f3f" : "#dff9fb",
               border: "12px solid #111",
               color: isDarkMode ? "#00ff00" : "#000",
@@ -236,45 +253,47 @@ export default function Home() {
                 inset -4px -4px 8px rgba(0,0,0,0.4),
                 inset 4px 4px 8px rgba(255,255,255,0.2)
               `,
+              // animation transform + transition
+              transformOrigin: "center",
+              transform: isZooming ? "scale(6) translateY(-6%)" : "scale(1)",
+              transition: "transform 1200ms cubic-bezier(.25,1,.5,1), opacity 1200ms ease",
+              zIndex: 20,
+              overflow: "hidden",
             }}
           >
-            {/* App icons */}
-            <div className="flex gap-6">
-              <button onClick={() => handleOpenPopup("write")}>📝</button>
-              <button onClick={() => handleOpenPopup("letters")}>📂</button>
-              <button onClick={() => handleOpenPopup("inbox")}>📬</button>
-              <button onClick={() => handleOpenPopup("profile")}>👤</button>
-            </div>
+            {/* Header title */}
+            <div style={{ marginBottom: 8 }}>love_letters</div>
 
-            {/* Popups */}
-            {openPopups.includes("write") && (
-              <PopupWrite
-                isFocused={focusedPopup === "write"}
-                onClose={() => handleClosePopup("write")}
-                onFocus={() => handleFocusPopup("write")}
+            {/* Icon grid: 2x2 */}
+            <div
+              className="grid grid-cols-2 gap-6 items-center justify-items-center"
+              style={{ width: "70%", marginTop: 8 }}
+            >
+              <IconButton
+                label="Write"
+                emoji="📝"
+                onClick={() => handleNavigate("/write")}
+                isDarkMode={isDarkMode}
               />
-            )}
-            {openPopups.includes("letters") && (
-              <PopupLetters
-                isFocused={focusedPopup === "letters"}
-                onClose={() => handleClosePopup("letters")}
-                onFocus={() => handleFocusPopup("letters")}
+              <IconButton
+                label="Letters"
+                emoji="📂"
+                onClick={() => handleNavigate("/letters")}
+                isDarkMode={isDarkMode}
               />
-            )}
-            {openPopups.includes("inbox") && (
-              <PopupInbox
-                isFocused={focusedPopup === "inbox"}
-                onClose={() => handleClosePopup("inbox")}
-                onFocus={() => handleFocusPopup("inbox")}
+              <IconButton
+                label="Inbox"
+                emoji="📬"
+                onClick={() => handleNavigate("/inbox")}
+                isDarkMode={isDarkMode}
               />
-            )}
-            {openPopups.includes("profile") && (
-              <PopupProfile
-                isFocused={focusedPopup === "profile"}
-                onClose={() => handleClosePopup("profile")}
-                onFocus={() => handleFocusPopup("profile")}
+              <IconButton
+                label="Profile"
+                emoji="👤"
+                onClick={() => handleNavigate("/profile")}
+                isDarkMode={isDarkMode}
               />
-            )}
+            </div>
           </div>
 
           {/* Slot below screen (Toggle Button) */}
@@ -308,5 +327,38 @@ export default function Home() {
         </div>
       </div>
     </div>
+  );
+}
+
+/* Small IconButton component used in the grid */
+function IconButton({
+  label,
+  emoji,
+  onClick,
+  isDarkMode
+}: {
+  label: string;
+  emoji: string;
+  onClick: () => void;
+  isDarkMode: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex flex-col items-center justify-center"
+      style={{
+        width: 120,
+        height: 120,
+        borderRadius: 12,
+        background: isDarkMode ? '#333': "rgba(255,255,255,0.92)",
+        border: "2px solid rgba(0,0,0,0.12)",
+        boxShadow: "4px 4px 10px rgba(0,0,0,0.15)",
+        cursor: "pointer",
+        userSelect: "none",
+      }}
+    >
+      <div style={{ fontSize: 36, marginBottom: 8 }}>{emoji}</div>
+      <div style={{ fontSize: 14, fontWeight: 600 }}>{label}</div>
+    </button>
   );
 }
