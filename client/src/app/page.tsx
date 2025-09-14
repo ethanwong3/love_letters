@@ -149,9 +149,6 @@ export default function Home() {
               overflow: "hidden",
             }}
           >
-            {/* Header */}
-            <div style={{ marginBottom: 8 }}>love_letters</div>
-
             {/* Home screen icons (2x1) */}
             {screenView === "home" ? (
               <div
@@ -161,14 +158,14 @@ export default function Home() {
                 <IconButton
                   src="/write.png"
                   alt="Write"
-                  label="Write"
+                  label="write"
                   onClick={() => handleNavigate("/write")}
                   isDarkMode={isDarkMode}
                 />
                 <IconButton
                   src="/inbox.png"
                   alt="Inbox"
-                  label="Inbox"
+                  label="inbox"
                   onClick={() => handleNavigate("/inbox")}
                   isDarkMode={isDarkMode}
                 />
@@ -192,12 +189,12 @@ export default function Home() {
                   width: "160px",
                   height: "40px",
                   borderRadius: "4px",
-                  backgroundColor: isDarkMode ? "#2b2b2b" : "#eaeaea",
-                  border: `2px solid ${isDarkMode ? "#555" : "#ccc"}`,
+                  backgroundColor: isDarkMode ? "#1c1c1c" : "#eaeaea",
+                  border: `2px solid ${isDarkMode ? "#1c1c1c" : "#ccc"}`,
                   boxShadow: isDarkMode
                     ? "inset -2px -2px 6px rgba(255,255,255,0.1), inset 2px 2px 6px rgba(0,0,0,0.8)"
                     : "inset -2px -2px 4px rgba(0,0,0,0.3), inset 2px 2px 4px rgba(255,255,255,0.7)",
-                  color: isDarkMode ? "#9affc8" : "#333",
+                  color: isDarkMode ? "#a6a6a6" : "#333",
                   cursor: "pointer",
                   fontSize: "16px",
                   fontWeight: "bold",
@@ -320,16 +317,20 @@ function CircleButton({
       style={{
         width: 40,
         height: 40,
-        borderRadius: "12px", 
+        borderRadius: "4px", 
         background: isDarkMode
-          ? "linear-gradient(145deg, #1e1e1e, #2c2c2c)"
-          : "linear-gradient(145deg, #eaeaea, #d0d0d0)",
-        border: `3px solid ${isDarkMode ? "#555" : "#b8b8b8"}`,
+          ? "#1c1c1c"
+          : "#e3e3e3",
+        border: `2px solid ${isDarkMode ? "#1c1c1c" : "#ccc"}`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         cursor: "pointer",
-        color: isDarkMode ? "#9affc8" : "#333",
+        color: isDarkMode ? "#a6a6a6" : "#333",
+
+        boxShadow: isDarkMode
+          ? "inset -2px -2px 6px rgba(255,255,255,0.1), inset 2px 2px 6px rgba(0,0,0,0.8)"
+          : "inset -2px -2px 4px rgba(0,0,0,0.3), inset 2px 2px 4px rgba(255,255,255,0.7)",
       }}
     >
       <div style={{ width: 20, height: 20 }}>{icon}</div>
@@ -348,63 +349,131 @@ function ProfileScreen({
   isDarkMode: boolean;
   handleLogout: () => void;
 }) {
+  const panelBg = isDarkMode ? "#1b1d1e" : "#f0f0f0";
+  const panelBorder = isDarkMode ? "#4a4d50" : "#888";
+
   return (
     <div
       style={{
         width: "92%",
         height: "92%",
-        padding: 12,
+        padding: 10,
         overflowY: "auto",
         display: "flex",
         flexDirection: "column",
-        alignItems: "flex-start",
-        color: isDarkMode ? "#ccffda" : "#023",
+        gap: 20,
+        color: isDarkMode ? "#e0e0e0" : "#111",
       }}
     >
-      <h2 style={{ fontFamily: "monospace", fontSize: 20, marginBottom: 8, color: isDarkMode ? "#00ff7a" : "#044" }}>
-        Profile
-      </h2>
-
-      <div style={{ width: "100%", marginBottom: 10 }}>
-        <div style={{ fontSize: 12, color: isDarkMode ? "#a7f7c6" : "#777", marginBottom: 4 }}>Name</div>
-        <div style={{ fontSize: 16, fontWeight: 800, fontFamily: "monospace" }}>{user.displayName}</div>
+      {/* Header */}
+      <div
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          borderBottom: `2px solid ${panelBorder}`,
+          paddingBottom: 10,
+        }}
+      >
+        PROFILE
       </div>
 
-      <div style={{ width: "100%", marginBottom: 10 }}>
-        <div style={{ fontSize: 12, color: isDarkMode ? "#a7f7c6" : "#777", marginBottom: 4 }}>Email</div>
-        <div style={{ fontSize: 16, fontWeight: 800, fontFamily: "monospace" }}>{user.email}</div>
-      </div>
-
-      <div style={{ marginTop: 6 }}>
-        <button
-          onClick={handleLogout}
+      {/* Info card */}
+      <div
+        style={{
+          alignSelf: "center",
+          background: panelBg,
+          border: `2px solid ${panelBorder}`,
+          boxShadow: "3px 3px 0 rgba(0,0,0,0.4)",
+          padding: "12px 18px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+          width: "fit-content",
+          minWidth: 260,
+          fontSize: 16,
+        }}
+      >
+        <div
           style={{
-            padding: "8px 12px",
-            fontFamily: "monospace",
-            fontWeight: 800,
-            background: isDarkMode ? "linear-gradient(90deg,#444,#222)" : "linear-gradient(90deg,#f7a8d3,#a28cc5)",
-            color: "#fff",
-            borderRadius: 8,
-            border: "2px solid #111",
-            boxShadow: "4px 4px 0 rgba(0,0,0,0.3)",
-            cursor: "pointer",
-            fontSize: 14,
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 20,
           }}
         >
-          Logout
-        </button>
+          <span style={{ fontWeight: 600 }}>name:</span>
+          <span>{user.displayName}</span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 20,
+          }}
+        >
+          <span style={{ fontWeight: 600 }}>email:</span>
+          <span>{user.email}</span>
+        </div>
       </div>
 
-      <div style={{ marginTop: 18, display: "flex", gap: 14, alignItems: "flex-start" }}>
+      {/* Logout */}
+      <button
+        onClick={handleLogout}
+        style={{
+          alignSelf: "center",
+          padding: "6px 18px",
+          fontWeight: 700,
+          background: isDarkMode
+            ? "linear-gradient(180deg, #2d2f31 0%, #111 100%)"
+            : "linear-gradient(180deg, #f7b7d3 0%, #c0a6ff 100%)",
+          color: isDarkMode ? "#e8ffe9" : "#111",
+          border: `2px solid ${panelBorder}`,
+          boxShadow: "3px 3px 0 rgba(0,0,0,0.5)",
+          cursor: "pointer",
+          fontSize: 14,
+          textTransform: "uppercase",
+        }}
+      >
+        LOGOUT
+      </button>
+
+      {/* Under Development System Error */}
+      <div
+        style={{
+          display: "flex",
+          gap: 15,
+          alignItems: "flex-start",
+          background: panelBg,
+          border: `2px solid ${panelBorder}`,
+          boxShadow: "3px 3px 0 rgba(0,0,0,0.5)",
+          padding: 15,
+        }}
+      >
         <img
           src="/gengar3.jpeg"
-          alt="gengar (under construction)"
-          style={{ width: 170, height: 170, objectFit: "cover", border: "3px solid #111" }}
+          alt="gengar error"
+          style={{
+            width: 200,
+            height: 200,
+            objectFit: "cover",
+            border: `2px solid ${panelBorder}`,
+          }}
         />
-        <div style={{ fontFamily: "monospace", color: isDarkMode ? "#c9ffd8" : "#444" }}>
-          <div style={{ fontSize: 13, marginBottom: 8 }}>⚠️ Under development</div>
-          <div style={{ fontSize: 13, color: isDarkMode ? "#aef7b8" : "#666" }}>
-            This section is still being worked on — account settings, avatars, and preferences coming soon.
+        <div style={{ fontSize: 13, lineHeight: 1.5 }}>
+          <div
+            style={{
+              fontWeight: 700,
+              marginBottom: 10,
+              color: isDarkMode ? "#ff7aa7" : "#a31244",
+            }}
+          >
+          !!! SYSTEM ERROR !!!
+          </div>
+          <div>
+            This part of the app is still undergoing development.
+            Please be patient for future functionalities.
+            Our developers are working very hard and understand your frustrations.
+            Please try again after the TFT season has completed.
+            Thank you for waiting!
           </div>
         </div>
       </div>

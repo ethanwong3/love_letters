@@ -151,8 +151,7 @@ DevOps:
 - need to redesign inbox and write functionalities before considering letters and profile
 
 - FRONTEND (HOME)
-- hover effects
-- change to only write and inbox buttons, add home button and profile button to bottom right in same row as light mode toggle
+- redesign
 
 - FRONTEND (WRITE)
 - x in search | enter to search | exclude self in search
