@@ -36,6 +36,11 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
     }
   }, [error]);
 
+  function validateSpotifyUrl(url: string): boolean {
+    const regex = /^https:\/\/open\.spotify\.com\/track\/.+$/;
+    return regex.test(url);
+  }
+
   async function uploadPhotoToCloudinary(file: File): Promise<string> {
     const formData = new FormData();
     formData.append("file", file);
@@ -47,7 +52,7 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to upload photo");
+      throw new Error("smth wrong w the photo bro");
     }
 
     const data = await response.json();
@@ -56,7 +61,13 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
 
   async function handleDraft() {
     if (!content.trim()) {
-      setError("Content cannot be empty.");
+      setError("have a heart, add some words to the letter");
+      return;
+    }
+
+    // ensure songurl is spotify link
+    if (songUrl && !validateSpotifyUrl(songUrl)) {
+      setError("use spotify boomer");
       return;
     }
 

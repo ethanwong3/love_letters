@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 type Props = {
   letter: any;
@@ -9,6 +9,7 @@ type Props = {
 export default function LetterModal({ letter, onClose }: Props) {
   const modalRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [trackInfo, setTrackInfo] = useState(null);
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -19,6 +20,25 @@ export default function LetterModal({ letter, onClose }: Props) {
     window.addEventListener("mousedown", handleOutsideClick);
     return () => window.removeEventListener("mousedown", handleOutsideClick);
   }, [onClose]);
+
+  // TODO: Fetch track info from Spotify API if songUrl is present
+  // add playback controls, manipulate track metadata, wavesurfer?
+  {/*useEffect(() => {
+    const fetchTrackInfo = async () => {
+      if (letter.songUrl) {
+        const trackId = letter.songUrl.split("/track/")[1];
+        const response = await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
+          headers: {
+            Authorization: `Bearer ${process.env.SPOTIFY_ACCESS_TOKEN}`, // Replace with your token
+          },
+        });
+        const data = await response.json();
+        setTrackInfo(data);
+      }
+    };
+
+    fetchTrackInfo();
+  }, [letter.songUrl]);*/}
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
@@ -31,7 +51,25 @@ export default function LetterModal({ letter, onClose }: Props) {
         <p className="mb-4 whitespace-pre-wrap">{letter.content}</p>
 
         {letter.songUrl && (
-          <audio ref={audioRef} src={letter.songUrl} controls autoPlay className="w-full mb-4" />
+          <div className="w-full mb-4">
+            {/*{trackInfo && (
+              <div className="mb-4">
+                <h3 className="text-lg font-bold">{trackInfo.name}</h3>
+                <p className="text-sm text-gray-600">By {trackInfo.artists.map((artist) => artist.name).join(", ")}</p>
+                <p className="text-sm text-gray-600">Album: {trackInfo.album.name}</p>
+                <img src={trackInfo.album.images[0].url} alt="Album cover" className="w-32 h-32 rounded-md mt-2" />
+              </div>
+            )}*/}
+            <iframe
+              src={`https://open.spotify.com/embed/track/${letter.songUrl.split('/track/')[1]}`}
+              width="100%"
+              height="80"
+              frameBorder="0"
+              allow="encrypted-media"
+              allowFullScreen
+              title="Spotify Player"
+            ></iframe>
+          </div>
         )}
 
         {letter.photoUrl && (
