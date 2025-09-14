@@ -37,10 +37,11 @@ testing
 npm install --save-dev jest @types/jest ts-jest
 npx ts-jest config:init
 
-Static Uploads
-npm install --save multer @nestjs/platform-express
-npm install --save-dev @types/multer
-npm install @nestjs/serve-static
+npm install framer-motion
+npm install react-icons
+npm install react-rmd
+
+npm i @cloudinary/url-gen @cloudinary/react
 
 # Set Up:
 
@@ -58,10 +59,6 @@ npx create-next-app@latest
 cd client
 npx shadcn@latest init
 npx shadcn@latest add button input form card
-
-npm install framer-motion
-npm install react-icons
-npm install react-rmd
 
 # Structure:
 
