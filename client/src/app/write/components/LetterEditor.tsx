@@ -18,6 +18,7 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
   const [songUrl, setSongUrl] = useState("");
   const [songFile, setSongFile] = useState<File | null>(null);
   const [photo, setPhoto] = useState<File | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [timestamp, setTimestamp] = useState<string>("");
 
@@ -35,39 +36,48 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
     }
   }, [error]);
 
+  async function uploadPhotoToCloudinary(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "");
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_NAME}/image/upload`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to upload photo");
+    }
+
+    const data = await response.json();
+    return data.secure_url; 
+  }
+
   async function handleDraft() {
     if (!content.trim()) {
       setError("Content cannot be empty.");
       return;
     }
 
-    // if there are files, use FormData
-    let body: FormData | string = JSON.stringify({
-      authorId: user.id,
-      recipientId: recipient.id,
-      content,
-      subject: subject || undefined,
-      songUrl: songUrl || undefined, // optional textual url
-      createdAt: timestamp,
-    });
-
-    if (photo || songFile) {
-      const fd = new FormData();
-      fd.append("authorId", user.id);
-      fd.append("recipientId", recipient.id);
-      fd.append("content", content);
-      if (subject) fd.append("subject", subject);
-      if (songUrl) fd.append("songUrl", songUrl); // fallback URL
-      if (photo) fd.append("photo", photo);
-      if (songFile) fd.append("song", songFile);
-      fd.append("createdAt", timestamp);
-      body = fd;
-    }
-
     try {
+      let uploadedPhotoUrl = photoUrl;
+      if (photo && !photoUrl) {
+        uploadedPhotoUrl = await uploadPhotoToCloudinary(photo);
+        setPhotoUrl(uploadedPhotoUrl);
+      }
+      const body = JSON.stringify({
+        authorId: user.id,
+        recipientId: recipient.id,
+        content,
+        subject: subject || undefined,
+        songUrl: songUrl || undefined,
+        photoUrl: uploadedPhotoUrl || undefined,
+        createdAt: timestamp,
+      });
       const draft = await apiFetch<Letter>(`/letter`, {
         method: "POST",
-        body: body as any,
+        body,
       });
       onDraft(draft);
     } catch (err: any) {
