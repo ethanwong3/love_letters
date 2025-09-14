@@ -75,8 +75,8 @@ export default function Home() {
   };
 
   // screen dimensions
-  const screenWidth = 640;
-  const screenHeight = 480;
+  const screenWidth = 680;
+  const screenHeight = 510;
 
   // handle navigation with zoom animation
   const handleNavigate = (path: "/write" | "/inbox") => {
@@ -143,7 +143,7 @@ export default function Home() {
               `,
               transformOrigin: "center",
               // more dramatic zoom when isZooming
-              transform: isZooming ? "scale(6) translateY(-6%)" : "scale(1)",
+              transform: isZooming ? "scale(10) translateY(-5%)" : "scale(1)",
               transition: "transform 1200ms cubic-bezier(.25,1,.5,1), opacity 1200ms ease",
               zIndex: 20,
               overflow: "hidden",

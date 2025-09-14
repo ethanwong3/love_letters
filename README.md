@@ -154,12 +154,9 @@ DevOps:
 - redesign
 
 - FRONTEND (WRITE)
-- x in search | enter to search | exclude self in search
-- move song option at the top, maybe include album cover too
-- add in photo option
-- do not allow save draft & continue to occur if content is empty
 - combine letter editor and send scheduler 
-- Dear [recipient.displayName] ... Love [author.displayName] prefill with a cute paragraph placeholder in the middle
+- does break lines work???
+- make photo and song optins work
 
 - FRONTEND (INBOX)
 - center letters in grid that does not start rowing at center
