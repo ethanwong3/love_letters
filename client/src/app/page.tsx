@@ -17,7 +17,9 @@ export default function Home() {
 
   const closeOnboarding = () => {
     setShowOnboarding(false);
-    localStorage.setItem("onboardingShown", "true");
+    try {
+      localStorage.setItem("onboardingShown", "true");
+    } catch {}
   };
 
   // redirect to login if not authenticated and show onboarding if first time
@@ -25,7 +27,7 @@ export default function Home() {
     if (!user) {
       router.push("/login");
     } else {
-      const onboardingShown = localStorage.getItem("onboardingShown");
+      const onboardingShown = typeof window !== "undefined" ? localStorage.getItem("onboardingShown") : null;
       if (!onboardingShown) {
         setShowOnboarding(true);
       }
@@ -34,8 +36,10 @@ export default function Home() {
 
   // initialise dark mode from localStorage
   useEffect(() => {
-    const stored = typeof window !== "undefined" && localStorage.getItem("isDarkMode");
-    if (stored !== null) setIsDarkMode(stored === "true");
+    try {
+      const stored = typeof window !== "undefined" && localStorage.getItem("isDarkMode");
+      if (stored !== null) setIsDarkMode(stored === "true");
+    } catch {}
   }, []);
 
   // track cursor position for background parallax effect
@@ -71,17 +75,28 @@ export default function Home() {
   };
 
   // screen dimensions
-  const screenWidth = 600;
-  const screenHeight = 450;
+  const screenWidth = 640;
+  const screenHeight = 480;
+
+  // handle navigation with zoom animation
+  const handleNavigate = (path: "/write" | "/inbox") => {
+    if (isZooming) return; // prevent double clicks
+    navTargetRef.current = path;
+    setIsZooming(true);
+
+    window.setTimeout(() => {
+      router.push(path);
+    }, 800);
+  };
 
   return (
     <div
       className="h-screen w-screen"
       style={{
         backgroundImage: `url('/${isDarkMode ? "backgrounddark" : "backgroundlight"}.jpg')`,
-        backgroundSize: "150%",
+        backgroundSize: "160%",
         backgroundPosition: calculateBackgroundPosition(),
-        transition: "background-position 0.1s ease-out",
+        transition: "background-position 0.12s ease-out",
       }}
     >
       <div className="flex items-center justify-center h-full">
@@ -96,13 +111,17 @@ export default function Home() {
           style={{
             backgroundColor: isDarkMode ? "#2b2b2b" : "#fdf5e6",
             border: `20px solid ${isDarkMode ? "#4a4a4a" : "#e0e0e0"}`,
-            borderRadius: "12px",
+            borderRadius: 12,
             boxShadow: isDarkMode
-              ? `inset -8px -8px 16px rgba(255,255,255,0.1),
-                 8px 8px 20px rgba(0,0,0,0.6)`
-              : `inset -8px -8px 16px rgba(0,0,0,0.2),
-                 8px 8px 20px rgba(0,0,0,0.4)`,
-            padding: "16px",
+              ? `
+                inset -8px -8px 16px rgba(255,255,255,0.1),
+                8px 8px 20px rgba(0,0,0,0.6)
+              `
+              : `
+                inset -8px -8px 16px rgba(0,0,0,0.2),
+                8px 8px 20px rgba(0,0,0,0.4)
+              `,
+            padding: 16,
             transform: "scale(1.4, 1.3)",
           }}
         >
@@ -115,7 +134,7 @@ export default function Home() {
               backgroundColor: isDarkMode ? "#001f3f" : "#dff9fb",
               border: "12px solid #111",
               color: isDarkMode ? "#00ff00" : "#000",
-              fontSize: "28px",
+              fontSize: 28,
               fontWeight: "bold",
               textAlign: "center",
               boxShadow: `
@@ -123,85 +142,98 @@ export default function Home() {
                 inset 4px 4px 8px rgba(255,255,255,0.2)
               `,
               transformOrigin: "center",
+              // more dramatic zoom when isZooming
               transform: isZooming ? "scale(6) translateY(-6%)" : "scale(1)",
-              transition:
-                "transform 1200ms cubic-bezier(.25,1,.5,1), opacity 1200ms ease",
+              transition: "transform 1200ms cubic-bezier(.25,1,.5,1), opacity 1200ms ease",
               zIndex: 20,
               overflow: "hidden",
             }}
           >
+            {/* Header */}
+            <div style={{ marginBottom: 8 }}>love_letters</div>
+
+            {/* Home screen icons (2x1) */}
             {screenView === "home" ? (
-              <>
-                <div style={{ marginBottom: 8 }}>love_letters</div>
-                <div
-                  className="grid grid-cols-2 gap-6 items-center justify-items-center"
-                  style={{ width: "70%", marginTop: 8 }}
-                >
-                  <IconButton
-                    label="Write"
-                    emoji="📝"
-                    onClick={() => router.push("/write")}
-                    isDarkMode={isDarkMode}
-                  />
-                  <IconButton
-                    label="Inbox"
-                    emoji="📬"
-                    onClick={() => router.push("/inbox")}
-                    isDarkMode={isDarkMode}
-                  />
-                </div>
-              </>
+              <div
+                className="grid grid-cols-2 gap-x-24 gap-y-8 items-center justify-items-center"
+                style={{ width: "62%", marginTop: 6 }}
+              >
+                <IconButton
+                  src="/write.png"
+                  alt="Write"
+                  label="Write"
+                  onClick={() => handleNavigate("/write")}
+                  isDarkMode={isDarkMode}
+                />
+                <IconButton
+                  src="/inbox.png"
+                  alt="Inbox"
+                  label="Inbox"
+                  onClick={() => handleNavigate("/inbox")}
+                  isDarkMode={isDarkMode}
+                />
+              </div>
             ) : (
-              <ProfileScreen
-                user={user}
-                isDarkMode={isDarkMode}
-                handleLogout={handleLogout}
-              />
+              <ProfileScreen user={user} isDarkMode={isDarkMode} handleLogout={handleLogout} />
             )}
           </div>
 
-          {/* Bottom Controls */}
-          <div className="flex flex-row items-center justify-between w-full mt-4 px-4">
-            {/* Left: Home & Profile buttons */}
-            <div className="flex gap-4">
-              <CircleButton
-                icon={<HomeIcon className="w-6 h-6" />}
-                onClick={() => setScreenView("home")}
-              />
-              <CircleButton
-                icon={<UserIcon className="w-6 h-6" />}
-                onClick={() => setScreenView("profile")}
-              />
+          {/* Bottom Controls: left spacer, center toggle, right small buttons */}
+          <div className="flex items-center justify-between mt-4 w-full px-2">
+            {/* Left spacer to keep toggle centered */}
+            <div style={{ width: 160 }} />
+
+            {/* Center: Light/Dark Toggle */}
+            <div style={{ display: "flex", justifyContent: "center", width: 200 }}>
+              <button
+                onClick={toggleDarkMode}
+                className="flex items-center justify-center"
+                style={{
+                  width: "160px",
+                  height: "40px",
+                  borderRadius: "4px",
+                  backgroundColor: isDarkMode ? "#2b2b2b" : "#eaeaea",
+                  border: `2px solid ${isDarkMode ? "#555" : "#ccc"}`,
+                  boxShadow: isDarkMode
+                    ? "inset -2px -2px 6px rgba(255,255,255,0.1), inset 2px 2px 6px rgba(0,0,0,0.8)"
+                    : "inset -2px -2px 4px rgba(0,0,0,0.3), inset 2px 2px 4px rgba(255,255,255,0.7)",
+                  color: isDarkMode ? "#9affc8" : "#333",
+                  cursor: "pointer",
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                }}
+              >
+                {isDarkMode ? (
+                  <>
+                    Dark <MoonIcon className="w-5 h-5 ml-2" />
+                  </>
+                ) : (
+                  <>
+                    Light <SunIcon className="w-5 h-5 ml-2" />
+                  </>
+                )}
+              </button>
             </div>
 
-            {/* Right: Light/Dark toggle */}
-            <button
-              onClick={toggleDarkMode}
-              className="flex items-center justify-center"
-              style={{
-                width: "160px",
-                height: "40px",
-                backgroundColor: "#eaeaea",
-                border: "2px solid #ccc",
-                borderRadius: "4px",
-                boxShadow:
-                  "inset -2px -2px 4px rgba(0,0,0,0.3), inset 2px 2px 4px rgba(255,255,255,0.7)",
-                fontSize: "16px",
-                fontWeight: "bold",
-                color: "#333",
-                cursor: "pointer",
-              }}
-            >
-              {isDarkMode ? (
-                <>
-                  Dark <MoonIcon className="w-5 h-5 ml-2" />
-                </>
-              ) : (
-                <>
-                  Light <SunIcon className="w-5 h-5 ml-2" />
-                </>
-              )}
-            </button>
+            {/* Right: Home & Profile — retro, not glossy */}
+            <div className="flex gap-5 items-center justify-end" style={{ width: 160 }}>
+              <CircleButton
+                ariaLabel="Home"
+                onClick={() => {
+                  setScreenView("home");
+                }}
+                icon={<HomeIcon className="w-5 h-5" />}
+                isDarkMode={isDarkMode}
+              />
+              <CircleButton
+                ariaLabel="Profile"
+                onClick={() => {
+                  setScreenView("profile");
+                }}
+                icon={<UserIcon className="w-5 h-5" />}
+                isDarkMode={isDarkMode}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -209,66 +241,104 @@ export default function Home() {
   );
 }
 
-/* --- Components --- */
+/* ---------- ICON BUTTON (image-based, bigger, hover effects) ---------- */
 function IconButton({
+  src,
+  alt,
   label,
-  emoji,
   onClick,
   isDarkMode,
 }: {
+  src: string;
+  alt: string;
   label: string;
-  emoji: string;
   onClick: () => void;
+  isDarkMode: boolean;
+}) {
+  const [hover, setHover] = useState(false);
+
+  const wrapperStyle: React.CSSProperties = {
+    width: 200,
+    height: 200,
+    borderRadius: 10,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "transform 180ms ease, box-shadow 180ms ease, border 180ms ease",
+    transform: hover ? "scale(1.05)" : "scale(1)",
+    background: "transparent",
+    cursor: "pointer",
+  };
+
+  const imgStyle: React.CSSProperties = {
+    width: 150,
+    height: 150,
+    objectFit: "contain",
+    display: "block",
+    pointerEvents: "none",
+  };
+
+  const labelStyle: React.CSSProperties = {
+    marginTop: 8,
+    fontSize: 18,
+    fontWeight: 800,
+    textShadow: isDarkMode ? "0 2px 0 rgba(0,0,0,0.6)" : "0 1px 0 rgba(255,255,255,0.6)",
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{ background: "transparent", border: "none", padding: 0 }}
+      aria-label={label}
+    >
+      <div style={wrapperStyle}>
+        <img src={src} alt={alt} style={imgStyle} />
+      </div>
+      <div style={labelStyle}>{label}</div>
+    </button>
+  );
+}
+
+/* ---------- SMALL RETRO CIRCLE BUTTON ---------- */
+function CircleButton({
+  icon,
+  onClick,
+  ariaLabel,
+  isDarkMode,
+}: {
+  icon: React.ReactNode;
+  onClick: () => void;
+  ariaLabel?: string;
   isDarkMode: boolean;
 }) {
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center justify-center"
+      aria-label={ariaLabel}
       style={{
-        width: 120,
-        height: 120,
-        borderRadius: 12,
-        background: isDarkMode ? "#333" : "rgba(255,255,255,0.92)",
-        border: "2px solid rgba(0,0,0,0.12)",
-        boxShadow: "4px 4px 10px rgba(0,0,0,0.15)",
+        width: 40,
+        height: 40,
+        borderRadius: "12px", 
+        background: isDarkMode
+          ? "linear-gradient(145deg, #1e1e1e, #2c2c2c)"
+          : "linear-gradient(145deg, #eaeaea, #d0d0d0)",
+        border: `3px solid ${isDarkMode ? "#555" : "#b8b8b8"}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         cursor: "pointer",
-        userSelect: "none",
+        color: isDarkMode ? "#9affc8" : "#333",
       }}
     >
-      <div style={{ fontSize: 36, marginBottom: 8 }}>{emoji}</div>
-      <div style={{ fontSize: 14, fontWeight: 600 }}>{label}</div>
+      <div style={{ width: 20, height: 20 }}>{icon}</div>
     </button>
   );
 }
 
-function CircleButton({
-  icon,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center justify-center"
-      style={{
-        width: 50,
-        height: 50,
-        borderRadius: "50%",
-        backgroundColor: "#d9d9d9",
-        border: "2px solid #999",
-        boxShadow:
-          "inset -2px -2px 4px rgba(255,255,255,0.6), inset 2px 2px 4px rgba(0,0,0,0.4)",
-        cursor: "pointer",
-      }}
-    >
-      {icon}
-    </button>
-  );
-}
 
+/* ---------- PROFILE SCREEN ---------- */
 function ProfileScreen({
   user,
   isDarkMode,
@@ -279,42 +349,70 @@ function ProfileScreen({
   handleLogout: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 p-4 text-center">
-      <h1
-        className="text-2xl font-bold mb-2"
-        style={{ color: isDarkMode ? "#00ff00" : "#333" }}
-      >
+    <div
+      style={{
+        width: "92%",
+        height: "92%",
+        padding: 12,
+        overflowY: "auto",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        color: isDarkMode ? "#ccffda" : "#023",
+      }}
+    >
+      <h2 style={{ fontFamily: "monospace", fontSize: 20, marginBottom: 8, color: isDarkMode ? "#00ff7a" : "#044" }}>
         Profile
-      </h1>
-      <p className="font-semibold">{user.displayName}</p>
-      <p className="font-semibold">{user.email}</p>
-      <button
-        onClick={handleLogout}
-        className="mt-2 px-6 py-2 rounded-lg font-bold"
-        style={{
-          background: isDarkMode
-            ? "linear-gradient(to right, #555, #222)"
-            : "linear-gradient(to right, #F8B7D4, #A28CC5)",
-          color: "#fff",
-          boxShadow: "4px 4px 8px rgba(0,0,0,0.3)",
-        }}
-      >
-        Logout
-      </button>
-      <div className="mt-4 flex flex-col items-center">
+      </h2>
+
+      <div style={{ width: "100%", marginBottom: 10 }}>
+        <div style={{ fontSize: 12, color: isDarkMode ? "#a7f7c6" : "#777", marginBottom: 4 }}>Name</div>
+        <div style={{ fontSize: 16, fontWeight: 800, fontFamily: "monospace" }}>{user.displayName}</div>
+      </div>
+
+      <div style={{ width: "100%", marginBottom: 10 }}>
+        <div style={{ fontSize: 12, color: isDarkMode ? "#a7f7c6" : "#777", marginBottom: 4 }}>Email</div>
+        <div style={{ fontSize: 16, fontWeight: 800, fontFamily: "monospace" }}>{user.email}</div>
+      </div>
+
+      <div style={{ marginTop: 6 }}>
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: "8px 12px",
+            fontFamily: "monospace",
+            fontWeight: 800,
+            background: isDarkMode ? "linear-gradient(90deg,#444,#222)" : "linear-gradient(90deg,#f7a8d3,#a28cc5)",
+            color: "#fff",
+            borderRadius: 8,
+            border: "2px solid #111",
+            boxShadow: "4px 4px 0 rgba(0,0,0,0.3)",
+            cursor: "pointer",
+            fontSize: 14,
+          }}
+        >
+          Logout
+        </button>
+      </div>
+
+      <div style={{ marginTop: 18, display: "flex", gap: 14, alignItems: "flex-start" }}>
         <img
-          src="/caterror.jpeg"
-          alt="Cat Error"
-          className="w-40 h-40 object-cover border border-black mb-2"
+          src="/gengar3.jpeg"
+          alt="gengar (under construction)"
+          style={{ width: 170, height: 170, objectFit: "cover", border: "3px solid #111" }}
         />
-        <p className="text-sm italic">
-          This section is still under development. 🐾
-        </p>
+        <div style={{ fontFamily: "monospace", color: isDarkMode ? "#c9ffd8" : "#444" }}>
+          <div style={{ fontSize: 13, marginBottom: 8 }}>⚠️ Under development</div>
+          <div style={{ fontSize: 13, color: isDarkMode ? "#aef7b8" : "#666" }}>
+            This section is still being worked on — account settings, avatars, and preferences coming soon.
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
+/* ---------- ONBOARDING POPUP ---------- */
 function OnboardingPopup({ user, closeOnboarding }: any) {
   return (
     <div
