@@ -12,4 +12,8 @@ export class UpdateLetterDto {
   @IsUrl()
   @IsOptional()
   songUrl?: string;
+
+  @IsUrl()
+  @IsOptional()
+  photoUrl?: string;
 }

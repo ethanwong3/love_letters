@@ -25,7 +25,9 @@ export class LetterService {
           subject: createLetterDto.subject,
           content: createLetterDto.content,
           songUrl: createLetterDto.songUrl,
+          photoUrl: createLetterDto.photoUrl,
           status: LetterStatus.DRAFT,
+          createdAt: createLetterDto.createdAt,
         },
       });
       return letter;
@@ -55,6 +57,7 @@ export class LetterService {
           subject: updateLetterDto.subject,
           content: updateLetterDto.content,
           songUrl: updateLetterDto.songUrl,
+          photoUrl: updateLetterDto.photoUrl,
           finishedAt: new Date(),
         },
       });

@@ -23,9 +23,17 @@ export class CreateLetterDto {
   @IsUrl()
   songUrl?: string | null;
 
+  @IsOptional()
+  @IsUrl()
+  photoUrl?: string | null;
+
   @IsEnum(LetterStatus)
   @IsOptional()
   status?: LetterStatus = LetterStatus.DRAFT;
+
+  @IsDate()
+  @Type(() => Date)
+  createdAt: Date;
 
   @IsDate()
   @Type(() => Date)

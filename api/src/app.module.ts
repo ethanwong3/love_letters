@@ -7,6 +7,8 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtStrategy } from './auth/jwt.strategy';
 import { LetterModule } from './letter/letter.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   // root modules connect global pieces
@@ -21,6 +23,10 @@ import { LetterModule } from './letter/letter.module';
     UserModule,
     AuthModule,
     LetterModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads',
+    }),
   ],
   providers: [JwtStrategy],
 })

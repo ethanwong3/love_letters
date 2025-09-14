@@ -16,19 +16,18 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
     `Dear ${recipient.displayName},\n\nWrite your message here.\n\nFrom,\n${user.displayName}`
   );
   const [songUrl, setSongUrl] = useState("");
+  const [songFile, setSongFile] = useState<File | null>(null);
   const [photo, setPhoto] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [createdAt, setCreatedAt] = useState<Date | null>(null);
   const [timestamp, setTimestamp] = useState<string>("");
-  const imageUrl = photo ? URL.createObjectURL(photo) : null;
 
-  // Set the timestamp when the component mounts
+  // set the timestamp when the component mounts
   useEffect(() => {
     const now = new Date();
     setTimestamp(now.toLocaleString());
   }, []);
 
-  // Automatically hide error after 3 seconds
+  // automatically hide error after 3 seconds
   useEffect(() => {
     if (error) {
       const timer = setTimeout(() => setError(null), 3000);
@@ -42,29 +41,34 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
       return;
     }
 
-    let body: any = {
+    // if there are files, use FormData
+    let body: FormData | string = JSON.stringify({
       authorId: user.id,
       recipientId: recipient.id,
       content,
-      status: "DRAFT",
-    };
+      subject: subject || undefined,
+      songUrl: songUrl || undefined, // optional textual url
+      createdAt: timestamp,
+    });
 
-    // Add optional fields only if they are not null or empty
-    if (subject) body.subject = subject;
-    if (songUrl) body.songUrl = songUrl;
-    if (photo) {
-      const formData = new FormData();
-      formData.append("photo", photo);
-      Object.keys(body).forEach((key) => formData.append(key, body[key]));
-      body = formData;
+    if (photo || songFile) {
+      const fd = new FormData();
+      fd.append("authorId", user.id);
+      fd.append("recipientId", recipient.id);
+      fd.append("content", content);
+      if (subject) fd.append("subject", subject);
+      if (songUrl) fd.append("songUrl", songUrl); // fallback URL
+      if (photo) fd.append("photo", photo);
+      if (songFile) fd.append("song", songFile);
+      fd.append("createdAt", timestamp);
+      body = fd;
     }
 
     try {
       const draft = await apiFetch<Letter>(`/letter`, {
         method: "POST",
-        body: photo ? body : JSON.stringify(body),
+        body: body as any,
       });
-      setCreatedAt(new Date(draft.createdAt));
       onDraft(draft);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
@@ -82,14 +86,20 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
 
       {/* Song URL Input */}
       <div>
-        <label className="block font-medium">Song URL</label>
+        <label className="block font-medium">Song URL (or upload an audio file)</label>
         <input
           type="url"
-          className="w-full border px-2 py-1"
+          className="w-full border px-2 py-1 mb-2"
           value={songUrl}
           onChange={(e) => setSongUrl(e.target.value)}
           placeholder="Add a song URL (optional)"
         />
+        <input
+          type="file"
+          accept="audio/*"
+          onChange={(e) => setSongFile(e.target.files?.[0] || null)}
+        />
+        {songFile && <div className="text-sm">{songFile.name}</div>}
       </div>
 
       {/* Subject Input */}
@@ -115,50 +125,18 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
         />
       </div>
 
-{/* Photo Upload */}
-<div>
-  <label className="block font-medium">Photo</label>
-  <div className="flex items-center space-x-2">
-    {/* Hidden File Input */}
-    <input
-      type="file"
-      accept="image/*"
-      id="photo-upload"
-      className="hidden"
-      onChange={(e) => setPhoto(e.target.files?.[0] || null)}
-    />
-    {/* Custom Button */}
-    <button
-      type="button"
-      onClick={() => document.getElementById("photo-upload")?.click()}
-      className="px-4 py-2 border bg-blue-500 text-white hover:bg-blue-600 rounded"
-    >
-      Choose File
-    </button>
-    {/* Display Selected File Name */}
-    {photo && (
-      <div className="flex items-center space-x-2">
-        <span className="text-sm text-gray-700">{photo.name}</span>
-        <button
-          onClick={() => setPhoto(null)}
-          className="text-sm text-red-500 hover:underline"
-        >
-          Remove Photo
-        </button>
+      {/* Photo */}
+      <div>
+        <label className="block font-medium">Photo</label>
+        <input type="file" accept="image/*" onChange={(e) => setPhoto(e.target.files?.[0] || null)} />
+        {photo && <div className="text-sm">{photo.name}</div>}
       </div>
-    )}
-  </div>
-</div>
 
-      {/* Image Preview */}
-      {imageUrl && (
+      {/* Preview */}
+      {photo && (
         <div className="mt-4">
           <p className="text-sm text-gray-500">Image Preview:</p>
-          <img
-            src={imageUrl}
-            alt="Preview"
-            className="max-w-full h-auto border rounded"
-          />
+          <img src={URL.createObjectURL(photo)} alt="Preview" className="max-w-full h-auto border rounded" />
         </div>
       )}
 

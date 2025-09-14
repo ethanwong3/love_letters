@@ -55,9 +55,10 @@ model Letter {
   recipientId   String
   subject       String?
   content       String
+  photoUrl      String?
   songUrl       String?
   status        LetterStatus @default(DRAFT)
-  createdAt     DateTime     @default(now())
+  createdAt     DateTime
   finishedAt    DateTime?
   deliveryDate  DateTime?
 }

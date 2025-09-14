@@ -37,6 +37,11 @@ testing
 npm install --save-dev jest @types/jest ts-jest
 npx ts-jest config:init
 
+Static Uploads
+npm install --save multer @nestjs/platform-express
+npm install --save-dev @types/multer
+npm install @nestjs/serve-static
+
 # Set Up:
 
 Requirements: node.js / pnpm / psql 16
@@ -155,15 +160,15 @@ DevOps:
 
 - FRONTEND (WRITE)
 - combine letter editor and send scheduler 
-- does break lines work???
-- make photo and song optins work
+- make song optins work
 
 - FRONTEND (INBOX)
 - center letters in grid that does not start rowing at center
 - allow for filter to unread
 - add deliverydate below
 - add audio player at top and make it work, add photo somewhere too
-- fix formatting, new lines should work.
+- writing time, not both created and finished at timestamps
+- make it dynamic, if letter is sent, see immediately
 
 # To Do (Reminder):
 

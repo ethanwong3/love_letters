@@ -43,9 +43,4 @@ export class UserService {
       },
     });
   }
-
-  // delete this
-  async letters() {
-    return this.prisma.letter.findMany();
-  }
 }
