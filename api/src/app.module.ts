@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtStrategy } from './auth/jwt.strategy';
 import { LetterModule } from './letter/letter.module';
+import { SpotifyModule } from './spotify/spotify.module';
 
 @Module({
   // root modules connect global pieces
@@ -21,6 +22,7 @@ import { LetterModule } from './letter/letter.module';
     UserModule,
     AuthModule,
     LetterModule,
+    SpotifyModule,
   ],
   providers: [JwtStrategy],
 })
