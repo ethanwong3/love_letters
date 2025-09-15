@@ -3,7 +3,7 @@ import type { Response } from 'express';
 import { SpotifyService } from './spotify.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 
-@Controller('letter')
+@Controller('spotify')
 @UseGuards(JwtAuthGuard)
 export class SpotifyController {
   constructor(private readonly spotifyService: SpotifyService) {}
