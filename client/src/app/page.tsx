@@ -354,6 +354,12 @@ function ProfileScreen({
   const [spotifyConnected, setSpotifyConnected] = useState(false);
 
   useEffect(() => {
+    if (localStorage.getItem("spotifyAccessToken")) {
+      setSpotifyConnected(true);
+    }
+  }, []);
+
+  useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       console.log("Received message:", event.data);
       if (event.data && event.data.access_token) {
