@@ -351,6 +351,34 @@ function ProfileScreen({
 }) {
   const panelBg = isDarkMode ? "#1b1d1e" : "#f0f0f0";
   const panelBorder = isDarkMode ? "#4a4d50" : "#888";
+  const [spotifyConnected, setSpotifyConnected] = useState(false);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      console.log("Received message:", event.data);
+      if (event.data && event.data.access_token) {
+        console.log("Storing Spotify access token:", event.data.access_token);
+        localStorage.setItem("spotifyAccessToken", event.data.access_token);
+        setSpotifyConnected(true);
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
+  const connectSpotify = () => {
+    console.log("Connecting to Spotify...");
+    const w = 500,
+      h = 600;
+    const topWindow = window.top ?? window;
+    const y = topWindow.outerHeight / 2 + topWindow.screenY - h / 2;
+    const x = topWindow.outerWidth / 2 + topWindow.screenX - w / 2;
+    window.open(
+      `${process.env.NEXT_PUBLIC_API_URL}/spotify/login`,
+      "Spotify Login",
+      `width=${w},height=${h},top=${y},left=${x}`
+    );
+  };
 
   return (
     <div
@@ -415,26 +443,82 @@ function ProfileScreen({
         </div>
       </div>
 
-      {/* Logout */}
-      <button
-        onClick={handleLogout}
+      {/* Actions row: Spotify + Logout */}
+      <div
         style={{
-          alignSelf: "center",
-          padding: "6px 18px",
-          fontWeight: 700,
-          background: isDarkMode
-            ? "linear-gradient(180deg, #2d2f31 0%, #111 100%)"
-            : "linear-gradient(180deg, #f7b7d3 0%, #c0a6ff 100%)",
-          color: isDarkMode ? "#e8ffe9" : "#111",
-          border: `2px solid ${panelBorder}`,
-          boxShadow: "3px 3px 0 rgba(0,0,0,0.5)",
-          cursor: "pointer",
-          fontSize: 14,
-          textTransform: "uppercase",
+          display: "flex",
+          justifyContent: "center",
+          gap: 20,
+          marginTop: 10,
         }}
       >
-        LOGOUT
-      </button>
+        {/* Spotify Button */}
+        {spotifyConnected ? (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "6px 14px",
+              border: `2px solid ${panelBorder}`,
+              boxShadow: "3px 3px 0 rgba(0,0,0,0.5)",
+              background: panelBg,
+              fontWeight: 600,
+              fontSize: 14,
+            }}
+          >
+            <img
+              src={isDarkMode ? "/spotifydark.jpeg" : "/spotifylight.jpeg"}
+              alt="spotify"
+              style={{ width: 22, height: 22 }}
+            />
+            Connected
+          </div>
+        ) : (
+          <button
+            onClick={connectSpotify}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "6px 14px",
+              border: `2px solid ${panelBorder}`,
+              boxShadow: "3px 3px 0 rgba(0,0,0,0.5)",
+              background: panelBg,
+              cursor: "pointer",
+            }}
+          >
+            <img
+              src={isDarkMode ? "/spotifydark.jpeg" : "/spotifylight.jpeg"}
+              alt="spotify"
+              style={{ width: 22, height: 22 }}
+            />
+            <span style={{ fontWeight: 600, fontSize: 14 }}>
+              Connect
+            </span>
+          </button>
+        )}
+
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: "6px 18px",
+            fontWeight: 700,
+            background: isDarkMode
+              ? "linear-gradient(180deg, #2d2f31 0%, #111 100%)"
+              : "linear-gradient(180deg, #f7b7d3 0%, #c0a6ff 100%)",
+            color: isDarkMode ? "#e8ffe9" : "#111",
+            border: `2px solid ${panelBorder}`,
+            boxShadow: "3px 3px 0 rgba(0,0,0,0.5)",
+            cursor: "pointer",
+            fontSize: 14,
+            textTransform: "uppercase",
+          }}
+        >
+          LOGOUT
+        </button>
+      </div>
 
       {/* Under Development System Error */}
       <div
@@ -466,14 +550,12 @@ function ProfileScreen({
               color: isDarkMode ? "#ff7aa7" : "#a31244",
             }}
           >
-          !!! SYSTEM ERROR !!!
+            !!! SYSTEM ERROR !!!
           </div>
           <div>
-            This part of the app is still undergoing development.
-            Please be patient for future functionalities.
-            Our developers are working very hard and understand your frustrations.
-            Please try again after the TFT season has completed.
-            Thank you for waiting!
+            This part of the app is still undergoing development. Our developers
+            may be working hard… or maybe just playing TFT. Either way, please
+            try again later!
           </div>
         </div>
       </div>

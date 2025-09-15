@@ -15,20 +15,19 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
   const [content, setContent] = useState(
     `Dear ${recipient.displayName},\n\nWrite your message here.\n\nFrom,\n${user.displayName}`
   );
-  const [songUrl, setSongUrl] = useState("");
-  const [songFile, setSongFile] = useState<File | null>(null);
+  const [songQuery, setSongQuery] = useState("");
+  const [songResults, setSongResults] = useState<any[]>([]);
+  const [selectedSong, setSelectedSong] = useState<any | null>(null);
+
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [timestamp, setTimestamp] = useState<string>("");
 
-  // set the timestamp when the component mounts
   useEffect(() => {
-    const now = new Date();
-    setTimestamp(now.toLocaleString());
+    setTimestamp(new Date().toLocaleString());
   }, []);
 
-  // automatically hide error after 3 seconds
   useEffect(() => {
     if (error) {
       const timer = setTimeout(() => setError(null), 3000);
@@ -36,38 +35,55 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
     }
   }, [error]);
 
-  function validateSpotifyUrl(url: string): boolean {
-    const regex = /^https:\/\/open\.spotify\.com\/track\/.+$/;
-    return regex.test(url);
-  }
-
   async function uploadPhotoToCloudinary(file: File): Promise<string> {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "");
+    formData.append(
+      "upload_preset",
+      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || ""
+    );
 
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_NAME}/image/upload`, {
-      method: "POST",
-      body: formData,
-    });
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_NAME}/image/upload`,
+      { method: "POST", body: formData }
+    );
 
-    if (!response.ok) {
-      throw new Error("smth wrong w the photo bro");
-    }
-
+    if (!response.ok) throw new Error("Photo upload failed");
     const data = await response.json();
-    return data.secure_url; 
+    return data.secure_url;
+  }
+
+  async function handleSongSearch() {
+    if (!songQuery.trim()) return;
+    const tokenjwt = localStorage.getItem("token");
+    const token = localStorage.getItem("spotifyAccessToken");
+    if (!tokenjwt) {
+      setError("Your session has expired");
+      return;
+    }
+    if (!token) {
+      setError("Please connect to Spotify first!");
+      return;
+    }
+    try {
+      const results = await apiFetch<any>(
+        `/spotify/search?query=${encodeURIComponent(songQuery)}`, {
+          headers: {
+            Authorization: `Bearer ${tokenjwt}`, // Send the JWT token for backend authentication
+            "Spotify-Access-Token": token, // Send the Spotify token as a separate header
+          },
+        }
+      );
+      setSongResults(results.tracks.items);
+    } catch (err: any) {
+      console.error("Error during song search:", err);
+      setError("Spotify search failed: " + (err.message || "Unexpected error"));
+    }
   }
 
   async function handleDraft() {
     if (!content.trim()) {
       setError("have a heart, add some words to the letter");
-      return;
-    }
-
-    // ensure songurl is spotify link
-    if (songUrl && !validateSpotifyUrl(songUrl)) {
-      setError("use spotify boomer");
       return;
     }
 
@@ -77,22 +93,24 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
         uploadedPhotoUrl = await uploadPhotoToCloudinary(photo);
         setPhotoUrl(uploadedPhotoUrl);
       }
+
       const body = JSON.stringify({
         authorId: user.id,
         recipientId: recipient.id,
         content,
         subject: subject || undefined,
-        songUrl: songUrl || undefined,
+        songUrl: selectedSong ? selectedSong.id : undefined,
         photoUrl: uploadedPhotoUrl || undefined,
         createdAt: timestamp,
       });
+
       const draft = await apiFetch<Letter>(`/letter`, {
         method: "POST",
         body,
       });
       onDraft(draft);
     } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
+      setError(err.message || "Unexpected error");
     }
   }
 
@@ -100,30 +118,74 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
     <div className="space-y-4">
       <h2 className="text-xl font-bold">Write Your Letter</h2>
 
-      {/* Timestamp */}
       <div className="text-sm text-gray-500">
         Current Timestamp: {timestamp}
       </div>
 
-      {/* Song URL Input */}
+      {/* Song Search */}
       <div>
-        <label className="block font-medium">Song URL (or upload an audio file)</label>
-        <input
-          type="url"
-          className="w-full border px-2 py-1 mb-2"
-          value={songUrl}
-          onChange={(e) => setSongUrl(e.target.value)}
-          placeholder="Add a song URL (optional)"
-        />
-        <input
-          type="file"
-          accept="audio/*"
-          onChange={(e) => setSongFile(e.target.files?.[0] || null)}
-        />
-        {songFile && <div className="text-sm">{songFile.name}</div>}
+        <label className="block font-medium">Attach a Song</label>
+        <div className="flex space-x-2 mb-2">
+          <input
+            type="text"
+            className="flex-1 border px-2 py-1"
+            value={songQuery}
+            onChange={(e) => setSongQuery(e.target.value)}
+            placeholder="Search Spotify..."
+          />
+          <button
+            type="button"
+            onClick={handleSongSearch}
+            className="px-3 py-1 bg-green-500 text-white border shadow hover:bg-green-600"
+          >
+            Search
+          </button>
+        </div>
+        {songResults.length > 0 && (
+          <div className="border rounded p-2 max-h-48 overflow-y-auto space-y-2">
+            {songResults.map((track) => (
+              <div
+                key={track.id}
+                onClick={() => setSelectedSong(track)}
+                className={`flex items-center space-x-2 p-2 cursor-pointer ${
+                  selectedSong?.id === track.id
+                    ? "bg-green-200"
+                    : "hover:bg-gray-100"
+                }`}
+              >
+                <img
+                  src={track.album.images[2]?.url}
+                  alt={track.name}
+                  className="w-10 h-10"
+                />
+                <div>
+                  <div className="font-bold">{track.name}</div>
+                  <div className="text-sm text-gray-600">
+                    {track.artists.map((a: any) => a.name).join(", ")}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {selectedSong && (
+          <div className="mt-2 flex items-center space-x-2 border p-2 bg-gray-50">
+            <img
+              src={selectedSong.album.images[1]?.url}
+              alt="album cover"
+              className="w-12 h-12"
+            />
+            <div>
+              <div className="font-bold">{selectedSong.name}</div>
+              <div className="text-sm text-gray-600">
+                {selectedSong.artists.map((a: any) => a.name).join(", ")}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Subject Input */}
+      {/* Subject */}
       <div>
         <label className="block font-medium">Subject</label>
         <input
@@ -135,7 +197,7 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
         />
       </div>
 
-      {/* Content Input */}
+      {/* Content */}
       <div>
         <label className="block font-medium">Content</label>
         <textarea
@@ -149,40 +211,36 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
       {/* Photo */}
       <div>
         <label className="block font-medium">Photo</label>
-        <input type="file" accept="image/*" onChange={(e) => setPhoto(e.target.files?.[0] || null)} />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setPhoto(e.target.files?.[0] || null)}
+        />
         {photo && <div className="text-sm">{photo.name}</div>}
       </div>
 
-      {/* Preview */}
       {photo && (
         <div className="mt-4">
           <p className="text-sm text-gray-500">Image Preview:</p>
-          <img src={URL.createObjectURL(photo)} alt="Preview" className="max-w-full h-auto border rounded" />
+          <img
+            src={URL.createObjectURL(photo)}
+            alt="Preview"
+            className="max-w-full h-auto border"
+          />
         </div>
       )}
 
-      {/* Error Popup */}
       {error && (
-        <div
-          className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded shadow-lg font-mono text-sm transition-all duration-500 ease-in-out opacity-100"
-          style={{
-            transform: error ? "translateY(0)" : "translateY(-20px)",
-            opacity: error ? 1 : 0,
-          }}
-        >
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 shadow-lg font-mono text-sm">
           <div className="flex items-center justify-between">
             <p>{error}</p>
-            <button
-              onClick={() => setError(null)}
-              className="ml-4 text-white hover:text-gray-200"
-            >
+            <button onClick={() => setError(null)} className="ml-4">
               ✕
             </button>
           </div>
         </div>
       )}
-      
-      {/* Save Draft Button */}
+
       <button
         onClick={handleDraft}
         disabled={!content.trim()}

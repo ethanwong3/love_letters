@@ -20,7 +20,6 @@ export class CreateLetterDto {
   content: string;
 
   @IsOptional()
-  @IsUrl()
   songUrl?: string | null;
 
   @IsOptional()
