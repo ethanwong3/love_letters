@@ -3,6 +3,8 @@ import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import type { Letter } from "@/types/letter";
 import type { User } from "@/types/user";
+import { set } from "react-hook-form";
+import { KawaiiLoader } from "./Loading";
 
 interface Props {
   recipient: User;
@@ -24,6 +26,8 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [timestamp, setTimestamp] = useState<string>("");
 
+  const [isUploading, setIsUploading] = useState(false);
+
   useEffect(() => {
     setTimestamp(new Date().toLocaleString());
   }, []);
@@ -36,21 +40,60 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
   }, [error]);
 
   async function uploadPhotoToCloudinary(file: File): Promise<string> {
+    // Debug: Check environment variables
+    const cloudinaryName = process.env.NEXT_PUBLIC_CLOUDINARY_NAME;
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+    
+    console.log("🔍 Debug Cloudinary Config:");
+    console.log("- NEXT_PUBLIC_CLOUDINARY_NAME:", cloudinaryName);
+    console.log("- NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET:", uploadPreset);
+    console.log("- File size:", file.size, "bytes");
+    console.log("- File type:", file.type);
+    
+    if (!cloudinaryName) {
+      throw new Error("Missing NEXT_PUBLIC_CLOUDINARY_NAME environment variable");
+    }
+    if (!uploadPreset) {
+      throw new Error("Missing NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET environment variable");
+    }
+
     const formData = new FormData();
     formData.append("file", file);
-    formData.append(
-      "upload_preset",
-      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || ""
-    );
+    formData.append("upload_preset", uploadPreset);
 
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_NAME}/image/upload`,
-      { method: "POST", body: formData }
-    );
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudinaryName}/image/upload`;
+    console.log("📡 Upload URL:", uploadUrl);
 
-    if (!response.ok) throw new Error("Photo upload failed");
-    const data = await response.json();
-    return data.secure_url;
+    try {
+      const response = await fetch(uploadUrl, {
+        method: "POST", 
+        body: formData 
+      });
+
+      console.log("📊 Response status:", response.status);
+      console.log("📊 Response headers:", Object.fromEntries(response.headers.entries()));
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("❌ Cloudinary error response:", errorText);
+        
+        try {
+          const errorJson = JSON.parse(errorText);
+          console.error("❌ Parsed error:", errorJson);
+          throw new Error(`Cloudinary upload failed: ${errorJson.error?.message || errorText}`);
+        } catch (parseError) {
+          throw new Error(`Cloudinary upload failed with status ${response.status}: ${errorText}`);
+        }
+      }
+
+      const data = await response.json();
+      console.log("✅ Upload successful:", data.secure_url);
+      return data.secure_url;
+
+    } catch (error) {
+      console.error("💥 Upload error:", error);
+      throw error;
+    }
   }
 
   async function handleSongSearch() {
@@ -90,8 +133,10 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
     try {
       let uploadedPhotoUrl = photoUrl;
       if (photo && !photoUrl) {
+        setIsUploading(true); // Show loading screen
         uploadedPhotoUrl = await uploadPhotoToCloudinary(photo);
         setPhotoUrl(uploadedPhotoUrl);
+        setIsUploading(false); // Hide loading screen
       }
 
       const body = JSON.stringify({
@@ -110,8 +155,13 @@ export default function LetterEditor({ recipient, onDraft }: Props) {
       });
       onDraft(draft);
     } catch (err: any) {
+      setIsUploading(false); // Ensure loading screen is hidden on error
       setError(err.message || "Unexpected error");
     }
+  }
+
+  if (isUploading) {
+    return <KawaiiLoader message="Uploading your kawaii photo" />;
   }
 
   return (

@@ -386,6 +386,12 @@ function ProfileScreen({
     );
   };
 
+  const disconnectSpotify = () => {
+    console.log("Disconnecting Spotify...");
+    localStorage.removeItem("spotifyAccessToken");
+    setSpotifyConnected(false);
+  };
+
   return (
     <div
       style={{
@@ -460,7 +466,8 @@ function ProfileScreen({
       >
         {/* Spotify Button */}
         {spotifyConnected ? (
-          <div
+          <button
+            onClick={disconnectSpotify}
             style={{
               display: "flex",
               alignItems: "center",
@@ -479,7 +486,7 @@ function ProfileScreen({
               style={{ width: 22, height: 22 }}
             />
             Connected
-          </div>
+          </button>
         ) : (
           <button
             onClick={connectSpotify}

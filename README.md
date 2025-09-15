@@ -43,6 +43,8 @@ npm install react-rmd
 
 npm i @cloudinary/url-gen @cloudinary/react
 
+npm install -g railway
+
 # Set Up:
 
 Requirements: node.js / pnpm / psql 16
@@ -133,6 +135,8 @@ Backend:
 DevOps:
     Vercel (Frontend Host)
     Railway/Render (Backend Host)
+    Neon (DB Host)
+    Cloudinary (Cloud Storage)
     Github (CI/CD)
     pnpm (Package Management)
 
