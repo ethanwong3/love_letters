@@ -16,11 +16,18 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchTriggered, setIsSearchTriggered] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   useEffect(() => {
     const darkMode = localStorage.getItem("isDarkMode") === "true";
     setIsDarkMode(darkMode);
   }, []);
+
+  useEffect(() => {
+    if (successMessage) {
+      setShowSuccessPopup(true);
+    }
+  }, [successMessage]);
 
   async function handleSearch() {
     if (!query.trim()) return;
@@ -50,6 +57,10 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
     setIsSearchTriggered(false);
   }
 
+  const closeSuccessPopup = () => {
+    setShowSuccessPopup(false);
+  };
+
   return (
     <div
       className="min-h-screen p-6"
@@ -60,24 +71,21 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
       }}
     >
       <div className="max-w-4xl mx-auto">
-        {/* Success Message */}
-        {successMessage && (
-          <div className="mb-6 bg-gradient-to-r from-green-400 to-blue-400 text-white p-6 rounded-3xl border-4 border-green-500 shadow-2xl animate-pulse">
-            <div className="flex items-center justify-center space-x-3">
-              <div className="text-3xl animate-bounce">✨</div>
-              <p className="text-xl font-bold text-center">{successMessage}</p>
-              <div className="text-3xl animate-bounce" style={{animationDelay: '0.5s'}}>💌</div>
-            </div>
-          </div>
-        )}
-
         {/* Header */}
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl border-4 border-pink-400 dark:border-purple-400 p-6 mb-6 shadow-2xl">
+        <div className={`backdrop-blur-sm rounded-3xl border-4 p-6 mb-6 shadow-2xl ${
+          isDarkMode 
+            ? 'bg-gray-800/90 border-purple-400 text-white'
+            : 'bg-white/90 border-pink-400 text-gray-900'
+        }`}>
           <div className="flex items-center justify-between">
             {/* Back Button */}
             <button
               onClick={onBack}
-              className="px-4 py-2 bg-gradient-to-r from-purple-400 to-pink-400 dark:from-purple-600 dark:to-pink-600 text-white rounded-2xl border-2 border-purple-600 dark:border-purple-400 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 font-bold"
+              className={`px-4 py-2 text-white rounded-2xl border-2 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 font-bold ${
+                isDarkMode
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 border-purple-400'
+                  : 'bg-gradient-to-r from-purple-400 to-pink-400 border-purple-600'
+              }`}
             >
               ← Home
             </button>
@@ -90,11 +98,19 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
         </div>
 
         {/* Search Section */}
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl border-4 border-blue-400 dark:border-blue-500 p-6 mb-6 shadow-2xl">
+        <div className={`backdrop-blur-sm rounded-3xl border-4 p-6 mb-6 shadow-2xl ${
+          isDarkMode 
+            ? 'bg-gray-800/90 border-blue-500'
+            : 'bg-white/90 border-blue-400'
+        }`}>
           <div className="flex items-center gap-4 mb-6">
             <div className="relative flex-1">
               <input
-                className="w-full border-3 border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-gray-700 px-6 py-4 pr-12 rounded-2xl focus:border-blue-500 focus:outline-none text-blue-800 dark:text-blue-200 placeholder-blue-500 dark:placeholder-blue-400 text-lg font-medium"
+                className={`w-full border-3 px-6 py-4 pr-12 rounded-2xl focus:outline-none text-lg font-medium ${
+                  isDarkMode
+                    ? 'border-blue-600 bg-gray-700 text-blue-200 placeholder-blue-400 focus:border-blue-400'
+                    : 'border-blue-300 bg-blue-50 text-blue-800 placeholder-blue-500 focus:border-blue-500'
+                }`}
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value)
@@ -107,7 +123,11 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
               {query && (
                 <button
                   onClick={clearInput}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-200 text-xl font-bold transition-colors duration-200"
+                  className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-xl font-bold transition-colors duration-200 ${
+                    isDarkMode
+                      ? 'text-blue-400 hover:text-blue-200'
+                      : 'text-blue-500 hover:text-blue-700'
+                  }`}
                 >
                   ✕
                 </button>
@@ -119,7 +139,9 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
               className={`px-8 py-4 rounded-2xl border-3 font-bold text-lg transition-all duration-200 transform ${
                 query.trim() && !isSearching
                   ? "bg-gradient-to-r from-blue-400 to-blue-500 text-white border-blue-600 shadow-lg hover:shadow-xl hover:scale-105"
-                  : "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 border-gray-400 cursor-not-allowed"
+                  : isDarkMode
+                    ? "bg-gray-600 text-gray-400 border-gray-500 cursor-not-allowed"
+                    : "bg-gray-300 text-gray-500 border-gray-400 cursor-not-allowed"
               }`}
             >
               {isSearching ? "Searching..." : "Search"}
@@ -130,28 +152,40 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
           {isSearching && (
             <div className="text-center py-8">
               <div className="inline-block animate-spin text-4xl mb-4">🌀</div>
-              <p className="text-blue-600 dark:text-blue-400 font-bold">Searching for friends...</p>
+              <p className={`font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                Searching for friends...
+              </p>
             </div>
           )}
 
           {/* Results */}
           {results.length > 0 && !isSearching && (
             <div className="space-y-3">
-              <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 pixel-font mb-4">
+              <h3 className={`text-xl font-bold pixel-font mb-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
                 Found {results.length} user{results.length !== 1 ? 's' : ''} 👥
               </h3>
               {results.map((user) => (
                 <div
                   key={user.id}
-                  className="group p-4 border-3 border-blue-200 dark:border-blue-700 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900 dark:to-purple-900 hover:from-blue-100 hover:to-purple-100 dark:hover:from-blue-800 dark:hover:to-purple-800 rounded-2xl cursor-pointer transition-all duration-300 transform hover:scale-102 hover:shadow-lg"
+                  className={`group p-4 border-3 rounded-2xl cursor-pointer transition-all duration-300 transform hover:scale-102 hover:shadow-lg ${
+                    isDarkMode
+                      ? 'border-blue-700 bg-gradient-to-r from-blue-900 to-purple-900 hover:from-blue-800 hover:to-purple-800'
+                      : 'border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100'
+                  }`}
                   onClick={() => onSelect(user)}
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-bold text-xl text-blue-800 dark:text-blue-200 group-hover:text-purple-600 dark:group-hover:text-purple-300">
+                      <div className={`font-bold text-xl transition-colors ${
+                        isDarkMode
+                          ? 'text-blue-200 group-hover:text-purple-300'
+                          : 'text-blue-800 group-hover:text-purple-600'
+                      }`}>
                         {user.displayName}
                       </div>
-                      <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                      <div className={`text-sm font-medium ${
+                        isDarkMode ? 'text-blue-400' : 'text-blue-600'
+                      }`}>
                         {user.email}
                       </div>
                     </div>
@@ -165,10 +199,10 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
           {results.length === 0 && isSearchTriggered && (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">😢</div>
-              <p className="text-xl font-bold text-gray-600 dark:text-gray-300 mb-2">
+              <p className={`text-xl font-bold mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                 No friends found with "{query}"
               </p>
-              <p className="text-gray-500 dark:text-gray-400">
+              <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
                 Try a different search term or check the spelling
               </p>
             </div>
@@ -178,16 +212,81 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
           {!query && results.length === 0 && (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🔍</div>
-              <p className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+              <p className={`text-xl font-bold mb-2 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
                 Wanna write?
               </p>
-              <p className="text-blue-500 dark:text-blue-300">
+              <p className={isDarkMode ? 'text-blue-300' : 'text-blue-500'}>
                 Type a name above to start searching for your friends
               </p>
             </div>
           )}
         </div>
       </div>
+
+      {/* Success Popup - Windows Style */}
+      {showSuccessPopup && successMessage && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div 
+            className="bg-gray-200 border-2 border-gray-800 shadow-2xl pixel-font"
+            style={{
+              width: '450px',
+              boxShadow: 'inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf, inset -2px -2px #808080, inset 2px 2px #c0c0c0'
+            }}
+          >
+            {/* Title Bar */}
+            <div 
+              className="text-white px-2 py-1 flex items-center justify-between text-sm font-bold"
+              style={{
+                background: 'linear-gradient(90deg, #008000 0%, #006000 100%)'
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-green-500 border border-green-700 flex items-center justify-center text-xs">✓</div>
+                <span>System Notice</span>
+              </div>
+              <button
+                onClick={closeSuccessPopup}
+                className="w-4 h-4 bg-gray-300 border border-gray-600 flex items-center justify-center text-black text-xs hover:bg-gray-400"
+                style={{
+                  boxShadow: 'inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* Content */}
+            <div className="p-6">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="bg-green-100 border-2 border-green-400 rounded flex items-center justify-center flex-shrink-0">
+                  <img
+                    src='/kirby2.jpeg'
+                    className="w-30 h-30 object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="font-bold text-gray-800 mb-3 text-base">Operation Successful!</div>
+                  <div className="text-gray-700 text-sm bg-white border-2 border-gray-400 p-3 font-mono leading-relaxed">
+                    {successMessage}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-center">
+                <button
+                  onClick={closeSuccessPopup}
+                  className="px-12 py-3 bg-gray-300 border-2 border-gray-600 text-gray-800 font-bold text-sm hover:bg-gray-400 transition-colors"
+                  style={{
+                    boxShadow: 'inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf, inset -2px -2px #808080, inset 2px 2px #c0c0c0'
+                  }}
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .pixel-font {

@@ -388,12 +388,20 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
       }}
     >
       <div className="max-w-4xl mx-auto">
-        {/* Retro Header */}
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl border-4 border-pink-400 dark:border-purple-400 p-6 mb-6 shadow-2xl">
+        {/* Header */}
+        <div className={`backdrop-blur-sm rounded-3xl border-4 p-6 mb-6 shadow-2xl ${
+          isDarkMode 
+            ? 'bg-gray-800/90 border-purple-400 text-white'
+            : 'bg-white/90 border-pink-400 text-gray-900'
+        }`}>
           <div className="flex items-center justify-between">
             <button
               onClick={onBack}
-              className="px-4 py-2 bg-gradient-to-r from-purple-400 to-pink-400 dark:from-purple-600 dark:to-pink-600 text-white rounded-2xl border-2 border-purple-600 dark:border-purple-400 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 font-bold"
+              className={`px-4 py-2 text-white rounded-2xl border-2 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 font-bold ${
+                isDarkMode
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 border-purple-400'
+                  : 'bg-gradient-to-r from-purple-400 to-pink-400 border-purple-600'
+              }`}
             >
               ← Back
             </button>
@@ -401,38 +409,50 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
               💫 Write a Letter 💫
             </h1>
           </div>
-          <div className="mt-4 p-3 bg-gradient-to-r from-yellow-100 to-pink-100 dark:from-yellow-800 dark:to-pink-800 rounded-2xl border-2 border-dashed border-purple-300 dark:border-purple-500">      
-            <p className="text-sm font-mono text-purple-700 dark:text-purple-200">
-              From: {user.displayName}
-            </p>            
-            <p className="text-sm font-mono text-purple-700 dark:text-purple-200">
-              To: {recipient.displayName}
-            </p>
-            <p className="text-sm font-mono text-purple-700 dark:text-purple-200">
-              Time: {timestamp}
-            </p>
+          <div className={`mt-4 p-3 rounded-2xl border-2 border-dashed ${
+            isDarkMode
+              ? 'bg-gradient-to-r from-yellow-800 to-pink-800 border-purple-500 text-purple-200'
+              : 'bg-gradient-to-r from-yellow-100 to-pink-100 border-purple-300 text-purple-700'
+          }`}>      
+            <p className="text-sm font-mono">From: {user.displayName}</p>            
+            <p className="text-sm font-mono">To: {recipient.displayName}</p>
+            <p className="text-sm font-mono">Time: {timestamp}</p>
           </div>
         </div>
 
         <div className="grid gap-6">
           {/* Spotify Section */}
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl border-4 border-green-400 dark:border-green-500 p-6 shadow-2xl">
-            <h3 className="text-xl font-bold text-green-600 dark:text-green-400 mb-4 pixel-font">Attach a Song</h3>
+          <div className={`backdrop-blur-sm rounded-3xl border-4 p-6 shadow-2xl ${
+            isDarkMode 
+              ? 'bg-gray-800/90 border-green-500'
+              : 'bg-white/90 border-green-400'
+          }`}>
+            <h3 className={`text-xl font-bold mb-4 pixel-font ${
+              isDarkMode ? 'text-green-400' : 'text-green-600'
+            }`}>Attach a Song</h3>
             
             {!spotifyConnected ? (
               <div className="text-center py-8">
                 <div className="mb-6">
                   <div className="text-6xl mb-4">🎵</div>
-                  <p className="text-green-700 dark:text-green-300 mb-2 font-semibold">
+                  <p className={`mb-2 font-semibold ${
+                    isDarkMode ? 'text-green-300' : 'text-green-700'
+                  }`}>
                     Connect to Spotify to add music to your letters
                   </p>
-                  <p className="text-sm text-green-600 dark:text-green-400">
+                  <p className={`text-sm ${
+                    isDarkMode ? 'text-green-400' : 'text-green-600'
+                  }`}>
                     dont be lazy its just a few clicks
                   </p>
                 </div>
                 <button
                   onClick={connectSpotify}
-                  className="px-8 py-4 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-2xl border-3 border-green-700 shadow-lg hover:from-green-500 hover:to-green-700 transition-all duration-200 font-bold text-lg transform hover:scale-105"
+                  className={`px-8 py-4 text-white rounded-2xl border-3 shadow-lg transition-all duration-200 font-bold text-lg transform hover:scale-105 ${
+                    isDarkMode
+                      ? 'bg-gradient-to-r from-green-500 to-green-700 border-green-400 hover:from-green-600 hover:to-green-800'
+                      : 'bg-gradient-to-r from-green-400 to-green-600 border-green-700 hover:from-green-500 hover:to-green-700'
+                  }`}
                 >
                   🎧 Connect Spotify 🎧
                 </button>
@@ -444,7 +464,11 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
                   <div className="flex-1 relative">
                     <input
                       type="text"
-                      className="w-full border-2 border-green-300 dark:border-green-600 bg-green-50 dark:bg-gray-700 px-4 py-3 rounded-2xl focus:border-green-500 focus:outline-none text-green-800 dark:text-green-200 placeholder-green-500 dark:placeholder-green-400"
+                      className={`w-full border-2 px-4 py-3 rounded-2xl focus:outline-none ${
+                        isDarkMode
+                          ? 'border-green-600 bg-gray-700 text-green-200 placeholder-green-400 focus:border-green-400'
+                          : 'border-green-300 bg-green-50 text-green-800 placeholder-green-500 focus:border-green-500'
+                      }`}
                       value={songQuery}
                       onChange={(e) => setSongQuery(e.target.value)}
                       placeholder="Search Spotify for vibes..."
@@ -453,24 +477,40 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
                   </div>
                   <button
                     onClick={handleSongSearch}
-                    className="px-6 py-3 bg-gradient-to-r from-green-400 to-green-500 text-white rounded-2xl border-2 border-green-600 shadow-lg hover:from-green-500 hover:to-green-600 transition-all duration-200 font-bold transform hover:scale-105"
+                    className={`px-6 py-3 text-white rounded-2xl border-2 shadow-lg transition-all duration-200 font-bold transform hover:scale-105 ${
+                      isDarkMode
+                        ? 'bg-gradient-to-r from-green-500 to-green-600 border-green-400 hover:from-green-600 hover:to-green-700'
+                        : 'bg-gradient-to-r from-green-400 to-green-500 border-green-600 hover:from-green-500 hover:to-green-600'
+                    }`}
                   >
                     Search
                   </button>
                 </div>
 
                 {songResults.length > 0 && (
-                  <div className="border-2 border-green-300 dark:border-green-600 rounded-2xl p-4 max-h-64 overflow-y-auto bg-green-50 dark:bg-gray-700">
+                  <div className={`border-2 rounded-2xl p-4 max-h-64 overflow-y-auto ${
+                    isDarkMode
+                      ? 'border-green-600 bg-gray-700'
+                      : 'border-green-300 bg-green-50'
+                  }`}>
                     {songResults.map((track) => (
                       <div
                         key={track.id}
                         onClick={() => setSelectedSong(track)}
-                        className="flex items-center gap-3 p-3 cursor-pointer rounded-2xl transition-all duration-200 hover:bg-green-100 dark:hover:bg-gray-600 border-2 border-transparent hover:border-green-400"
+                        className={`flex items-center gap-3 p-3 cursor-pointer rounded-2xl transition-all duration-200 border-2 border-transparent ${
+                          isDarkMode
+                            ? 'hover:bg-gray-600 hover:border-green-400'
+                            : 'hover:bg-green-100 hover:border-green-400'
+                        }`}
                       >
                         <img src={track.album.images[2]?.url} alt={track.name} className="w-12 h-12 rounded-lg" />
                         <div>
-                          <div className="font-bold text-green-800 dark:text-green-200">{track.name}</div>
-                          <div className="text-sm text-green-600 dark:text-green-400">
+                          <div className={`font-bold ${
+                            isDarkMode ? 'text-green-200' : 'text-green-800'
+                          }`}>{track.name}</div>
+                          <div className={`text-sm ${
+                            isDarkMode ? 'text-green-400' : 'text-green-600'
+                          }`}>
                             {track.artists.map((a: any) => a.name).join(", ")}
                           </div>
                         </div>
@@ -482,12 +522,20 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
             ) : (
               // Selected song display
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-100 to-green-200 dark:from-green-800 dark:to-green-900 rounded-2xl border-2 border-green-400 dark:border-green-500">
+                <div className={`flex items-center justify-between p-4 rounded-2xl border-2 ${
+                  isDarkMode
+                    ? 'bg-gradient-to-r from-green-800 to-green-900 border-green-500'
+                    : 'bg-gradient-to-r from-green-100 to-green-200 border-green-400'
+                }`}>
                   <div className="flex items-center gap-3">
                     <img src={selectedSong.album.images[1]?.url} alt="album" className="w-16 h-16 rounded-lg border-2 border-green-300" />
                     <div>
-                      <div className="font-bold text-green-800 dark:text-green-200">{selectedSong.name}</div>
-                      <div className="text-sm text-green-600 dark:text-green-400">
+                      <div className={`font-bold ${
+                        isDarkMode ? 'text-green-200' : 'text-green-800'
+                      }`}>{selectedSong.name}</div>
+                      <div className={`text-sm ${
+                        isDarkMode ? 'text-green-400' : 'text-green-600'
+                      }`}>
                         {selectedSong.artists.map((a: any) => a.name).join(", ")}
                       </div>
                     </div>
@@ -504,15 +552,27 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
           </div>
 
           {/* Subject & Content */}
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl border-4 border-purple-400 dark:border-purple-500 p-6 shadow-2xl">
-            <h3 className="text-xl font-bold text-purple-600 dark:text-purple-400 mb-4 pixel-font">Letter Content</h3>
+          <div className={`backdrop-blur-sm rounded-3xl border-4 p-6 shadow-2xl ${
+            isDarkMode 
+              ? 'bg-gray-800/90 border-purple-500'
+              : 'bg-white/90 border-purple-400'
+          }`}>
+            <h3 className={`text-xl font-bold mb-4 pixel-font ${
+              isDarkMode ? 'text-purple-400' : 'text-purple-600'
+            }`}>Letter Content</h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block font-bold text-purple-700 dark:text-purple-300 mb-2">Subject</label>
+                <label className={`block font-bold mb-2 ${
+                  isDarkMode ? 'text-purple-300' : 'text-purple-700'
+                }`}>Subject</label>
                 <input
                   type="text"
-                  className="w-full border-2 border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-gray-700 px-4 py-3 rounded-2xl focus:border-purple-500 focus:outline-none text-purple-800 dark:text-purple-200 placeholder-purple-500"
+                  className={`w-full border-2 px-4 py-3 rounded-2xl focus:outline-none ${
+                    isDarkMode
+                      ? 'border-purple-600 bg-gray-700 text-purple-200 placeholder-purple-400 focus:border-purple-400'
+                      : 'border-purple-300 bg-purple-50 text-purple-800 placeholder-purple-500 focus:border-purple-500'
+                  }`}
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Add a dreamy subject"
@@ -520,9 +580,15 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
               </div>
 
               <div>
-                <label className="block font-bold text-purple-700 dark:text-purple-300 mb-2">Your Message</label>
+                <label className={`block font-bold mb-2 ${
+                  isDarkMode ? 'text-purple-300' : 'text-purple-700'
+                }`}>Your Message</label>
                 <textarea
-                  className="w-full border-2 border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-gray-700 px-4 py-3 rounded-2xl focus:border-purple-500 focus:outline-none text-purple-800 dark:text-purple-200 placeholder-purple-500 resize-none"
+                  className={`w-full border-2 px-4 py-3 rounded-2xl focus:outline-none resize-none ${
+                    isDarkMode
+                      ? 'border-purple-600 bg-gray-700 text-purple-200 placeholder-purple-400 focus:border-purple-400'
+                      : 'border-purple-300 bg-purple-50 text-purple-800 placeholder-purple-500 focus:border-purple-500'
+                  }`}
                   rows={12}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
@@ -533,8 +599,14 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
           </div>
 
           {/* Photo Upload with Progress */}
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl border-4 border-pink-400 dark:border-pink-500 p-6 shadow-2xl">
-            <h3 className="text-xl font-bold text-pink-600 dark:text-pink-400 mb-4 pixel-font">Attach Photo</h3>
+          <div className={`backdrop-blur-sm rounded-3xl border-4 p-6 shadow-2xl ${
+            isDarkMode 
+              ? 'bg-gray-800/90 border-pink-500'
+              : 'bg-white/90 border-pink-400'
+          }`}>
+            <h3 className={`text-xl font-bold mb-4 pixel-font ${
+              isDarkMode ? 'text-pink-400' : 'text-pink-600'
+            }`}>Attach Photo</h3>
             
             {!photo ? (
               <input
@@ -547,24 +619,40 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
                     setUploadState({ status: 'idle' });
                   }
                 }}
-                className="block w-full text-sm text-pink-600 dark:text-pink-400 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-2 file:border-pink-300 file:text-sm file:font-bold file:bg-gradient-to-r file:from-pink-100 file:to-pink-200 file:text-pink-700 hover:file:from-pink-200 hover:file:to-pink-300 dark:file:from-pink-800 dark:file:to-pink-900 dark:file:text-pink-200 dark:file:border-pink-600"
+                className={`block w-full text-sm file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-2 file:text-sm file:font-bold file:transition-all ${
+                  isDarkMode
+                    ? 'text-pink-400 file:border-pink-600 file:bg-gradient-to-r file:from-pink-800 file:to-pink-900 file:text-pink-200 hover:file:from-pink-700 hover:file:to-pink-800'
+                    : 'text-pink-600 file:border-pink-300 file:bg-gradient-to-r file:from-pink-100 file:to-pink-200 file:text-pink-700 hover:file:from-pink-200 hover:file:to-pink-300'
+                }`}
               />
             ) : (
               <div className="space-y-4">
                 {/* Upload Status - Always Shows Progress */}
                 {uploadState.status === 'uploading' && (
-                  <div className="bg-pink-50 dark:bg-gray-700 rounded-2xl p-4 border-2 border-pink-300 dark:border-pink-600">
+                  <div className={`rounded-2xl p-4 border-2 ${
+                    isDarkMode
+                      ? 'bg-gray-700 border-pink-600'
+                      : 'bg-pink-50 border-pink-300'
+                  }`}>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-bold text-pink-600 dark:text-pink-400">Uploading... (Never gives up! 💪)</span>
-                      <span className="text-sm text-pink-600 dark:text-pink-400">{uploadState.progress}%</span>
+                      <span className={`text-sm font-bold ${
+                        isDarkMode ? 'text-pink-400' : 'text-pink-600'
+                      }`}>Uploading... (Never gives up! 💪)</span>
+                      <span className={`text-sm ${
+                        isDarkMode ? 'text-pink-400' : 'text-pink-600'
+                      }`}>{uploadState.progress}%</span>
                     </div>
-                    <div className="w-full bg-pink-200 dark:bg-gray-600 rounded-full h-3">
+                    <div className={`w-full rounded-full h-3 ${
+                      isDarkMode ? 'bg-gray-600' : 'bg-pink-200'
+                    }`}>
                       <div 
                         className="bg-gradient-to-r from-pink-400 to-pink-500 h-3 rounded-full transition-all duration-300"
                         style={{ width: `${uploadState.progress}%` }}
                       ></div>
                     </div>
-                    <p className="text-xs text-pink-500 dark:text-pink-400 mt-2">
+                    <p className={`text-xs mt-2 ${
+                      isDarkMode ? 'text-pink-400' : 'text-pink-500'
+                    }`}>
                       This upload will keep retrying until it succeeds - you can send your letter now!
                     </p>
                   </div>
@@ -572,12 +660,22 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
                 
                 {/* Upload Complete */}
                 {uploadState.status === 'completed' && (
-                  <div className="bg-green-50 dark:bg-green-900/50 rounded-2xl p-3 border-2 border-green-300 dark:border-green-600">
-                    <p className="text-sm font-bold text-green-600 dark:text-green-400">✅ Upload complete!</p>
+                  <div className={`rounded-2xl p-3 border-2 ${
+                    isDarkMode
+                      ? 'bg-green-900/50 border-green-600'
+                      : 'bg-green-50 border-green-300'
+                  }`}>
+                    <p className={`text-sm font-bold ${
+                      isDarkMode ? 'text-green-400' : 'text-green-600'
+                    }`}>✅ Upload complete!</p>
                   </div>
                 )}
                 
-                <div className="border-2 border-pink-300 dark:border-pink-600 rounded-2xl p-4 bg-pink-50 dark:bg-gray-700">
+                <div className={`border-2 rounded-2xl p-4 ${
+                  isDarkMode
+                    ? 'border-pink-600 bg-gray-700'
+                    : 'border-pink-300 bg-pink-50'
+                }`}>
                   <img
                     src={URL.createObjectURL(photo)}
                     alt="Preview"
@@ -595,7 +693,11 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
           </div>
 
           {/* Send Options */}
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl border-4 border-blue-400 dark:border-blue-500 p-6 shadow-2xl">
+          <div className={`backdrop-blur-sm rounded-3xl border-4 p-6 shadow-2xl ${
+            isDarkMode 
+              ? 'bg-gray-800/90 border-purple-500'
+              : 'bg-white/90 border-purple-400'
+          }`}>
             <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-4 pixel-font">Send Options</h3>
             
             {/* Info about background upload */}
@@ -686,10 +788,7 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
                 background: 'linear-gradient(90deg, #000080 0%, #000060 100%)'
               }}
             >
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-red-500 border border-red-700 flex items-center justify-center text-xs">×</div>
-                <span>System Error</span>
-              </div>
+              <span>System Error</span>
               <button
                 onClick={() => setError(null)}
                 className="w-4 h-4 bg-gray-300 border border-gray-600 flex items-center justify-center text-black text-xs hover:bg-gray-400"
@@ -704,7 +803,7 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
             {/* Content */}
             <div className="p-4">
               <div className="flex items-start gap-3 mb-4">
-                <div className="text-red-600 text-2xl">⚠️</div>
+                <img src='/cat8.jpeg' className="w-30 h-30 object-cover"/>
                 <div>
                   <div className="font-bold text-gray-800 mb-2">An error has occurred:</div>
                   <div className="text-gray-700 text-sm bg-white border-2 border-gray-400 p-2 font-mono">
