@@ -331,7 +331,7 @@ export default function LetterModal({ letter, onClose }: Props) {
         if (error.message === 'Connection timeout') {
           console.warn('Spotify connection timed out, falling back to preview mode');
           setHasPremium(false);
-          setError('Spotify connection timed out. Using preview mode instead.');
+          // setError('Spotify connection timed out. Using preview mode instead.');
           return; // Exit early instead of retrying
         }
         throw error; // Re-throw other errors
@@ -575,213 +575,203 @@ export default function LetterModal({ letter, onClose }: Props) {
     return "bg-green-100 border-green-400 text-green-800";
   };
 
-  return (
-    <div className="fixed inset-0 bg-gradient-to-br from-purple-900/90 to-pink-900/90 flex items-center justify-center z-50 backdrop-blur-sm">
-      <div
-        ref={modalRef}
-        className="bg-gradient-to-br from-pink-100 to-purple-100 border-4 border-black p-8 max-w-5xl w-full mx-4 max-h-[90vh] overflow-hidden shadow-2xl relative"
-        style={{
-          borderRadius: "20px",
-          boxShadow: "0 0 30px rgba(255, 20, 147, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.3)",
-        }}
+return (
+  <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div
+      ref={modalRef}
+      className="bg-white border-10 border-black p-4 max-w-5xl w-full mx-4 max-h-[90vh] h-full overflow-hidden shadow-2xl relative flex flex-col"
+    >
+      <button
+        onClick={handleClose}
+        className="absolute top-4 right-4 z-10 w-10 h-10 bg-red-500 hover:bg-red-600 text-white font-bold text-xl border-2 border-black shadow-lg transition-all hover:scale-110"
+        style={{ borderRadius: "50%" }}
       >
-        {/* Decorative background elements */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-          <div className="absolute top-4 left-4 w-8 h-8 bg-yellow-300 rounded-full opacity-70 animate-pulse"></div>
-          <div className="absolute top-8 right-8 w-6 h-6 bg-cyan-300 rotate-45 opacity-60 animate-bounce"></div>
-          <div className="absolute bottom-4 left-8 w-4 h-4 bg-pink-400 rounded-full opacity-80"></div>
-          <div className="absolute bottom-8 right-4 w-10 h-10 border-4 border-green-400 rounded-full opacity-50"></div>
-        </div>
+        ×
+      </button>
 
-        <button
-          onClick={handleClose}
-          className="absolute top-4 right-4 z-10 w-10 h-10 bg-red-500 hover:bg-red-600 text-white font-bold text-xl border-2 border-black shadow-lg transition-all hover:scale-110"
-          style={{ borderRadius: "50%" }}
-        >
-          ×
-        </button>
+      {/* Top Row - Subject and Writing Time */}
+      <div className="flex-shrink-0 mb-4">
+        <p className="mb-2">
+          Subject: {letter.subject || "No subject"}
+        </p>
+        <p>
+          Writing Time: {new Date(letter.createdAt).toLocaleString()} → {letter.finishedAt
+            ? new Date(letter.finishedAt).toLocaleString()
+            : "Not finished"}
+        </p>
+      </div>
 
-        {/* Retro Header */}
-        <div className="mb-6">
-          <h2 className="text-3xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-purple-600 drop-shadow-lg">
-            ✉️ {letter.subject || "No subject"} ✨
-          </h2>
-          <div className="text-sm space-y-1">
-            <p className="text-purple-700 font-semibold">
-              📅 Created: {new Date(letter.createdAt).toLocaleString()}
-            </p>
-            <p className="text-purple-700 font-semibold">
-              ✅ Finished:{" "}
-              {letter.finishedAt
-                ? new Date(letter.finishedAt).toLocaleString()
-                : "Not finished"}
-            </p>
-          </div>
-        </div>
-
-        {/* Custom Music Player */}
-        {letter.songUrl && (
-          <div className="mb-6">
-            {loading && (
-              <div className="text-center py-8">
-                <div className="animate-spin text-4xl">🎵</div>
-                <p className="text-purple-600 font-semibold mt-2">Loading song...</p>
-              </div>
-            )}
-
-            {error && (
-              <div className="bg-red-100 border-2 border-red-400 p-4 rounded-lg text-red-700 text-center mb-4">
-                ❌ {error}
-              </div>
-            )}
-
-            {trackInfo && !loading && (
-              <div 
-                className="bg-gradient-to-r from-cyan-200 to-pink-200 border-4 border-black p-4 shadow-lg relative overflow-hidden"
-                style={{ borderRadius: "15px" }}
-              >
-                <div className="absolute top-2 right-2 w-4 h-4 bg-red-400 rounded-full animate-pulse"></div>
-                <div className="absolute bottom-2 left-2 w-3 h-3 bg-green-400 rounded-full"></div>
-
-                <div className={`${getPlayerStatusColor()} border-2 p-2 rounded-lg text-xs mb-4`}>
-                  🎵 {getPlayerStatus()}
+      {/* Middle Row - Music Player and Photo */}
+      <div className="flex-shrink-0 mb-4">
+        <div className="flex gap-4 items-start">
+          {/* Music Player */}
+          {letter.songUrl && (
+            <div className="flex-1">
+              {loading && (
+                <div className="text-center py-8">
+                  <div className="animate-spin text-4xl">🎵</div>
+                  <p className="text-purple-600 font-semibold mt-2">Loading song...</p>
                 </div>
+              )}
 
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className="relative">
-                    <img
-                      src={trackInfo.album.images[1]?.url || trackInfo.album.images[0]?.url}
-                      alt="album cover"
-                      className="w-20 h-20 border-3 border-black shadow-lg"
-                      style={{ borderRadius: "10px" }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20" style={{ borderRadius: "10px" }}></div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-black text-lg text-purple-800 mb-1 drop-shadow">
-                      🎵 {trackInfo.name}
-                    </div>
-                    <div className="text-sm text-purple-600 font-semibold">
-                      👤 {trackInfo.artists.map((a: any) => a.name).join(", ")}
-                    </div>
-                    <div className="text-xs text-purple-500 mt-1">
-                      💿 {trackInfo.album.name}
-                    </div>
-                  </div>
+              {error && (
+                <div className="bg-red-100 border-2 border-red-400 p-4 rounded-lg text-red-700 text-center mb-4">
+                  ❌ {error}
                 </div>
+              )}
 
-                {!hasPremium && trackInfo.preview_url && (
-                  <audio
-                    ref={audioRef}
-                    src={trackInfo.preview_url}
-                    style={{ display: 'none' }}
-                    preload="metadata"
-                  />
-                )}
+              {trackInfo && !loading && (
+                <div 
+                  className="bg-gradient-to-r from-cyan-200 to-pink-200 border-4 border-black p-2 shadow-lg relative overflow-hidden"
+                  style={{ borderRadius: "15px" }}
+                >
+                  <div className={`${getPlayerStatusColor()} border-2 p-2 rounded-lg text-xs mb-2`}>
+                    🎵 {getPlayerStatus()}
+                  </div>
 
-                {(hasPremium || trackInfo.preview_url) ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-center space-x-4">
-                      <button
-                        onClick={skipBackward}
-                        className="w-12 h-12 bg-purple-500 hover:bg-purple-600 text-white border-2 border-black shadow-lg transition-all hover:scale-110"
-                        style={{ borderRadius: "50%" }}
-                      >
-                        <SkipBack className="w-5 h-5 mx-auto" />
-                      </button>
-                      
-                      <button
-                        onClick={togglePlay}
-                        disabled={!!(hasPremium && !playerReady)}
-                        className="w-16 h-16 bg-pink-500 hover:bg-pink-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white border-3 border-black shadow-xl transition-all hover:scale-110 animate-pulse"
-                        style={{ borderRadius: "50%" }}
-                      >
-                        {isPlaying ? <Pause className="w-7 h-7 mx-auto" /> : <Play className="w-7 h-7 mx-auto" />}
-                      </button>
-                      
-                      <button
-                        onClick={skipForward}
-                        className="w-12 h-12 bg-purple-500 hover:bg-purple-600 text-white border-2 border-black shadow-lg transition-all hover:scale-110"
-                        style={{ borderRadius: "50%" }}
-                      >
-                        <SkipForward className="w-5 h-5 mx-auto" />
-                      </button>
-                    </div>
-
-                    <div className="space-y-2">
-                      <input
-                        type="range"
-                        min={0}
-                        max={duration || 0}
-                        value={currentTime}
-                        onChange={handleSeek}
-                        disabled={!!(hasPremium && !playerReady)}
-                        className="w-full h-3 bg-gradient-to-r from-pink-300 to-purple-300 rounded-lg appearance-none cursor-pointer border-2 border-black disabled:opacity-50"
-                        style={{
-                          background: `linear-gradient(to right, #ec4899 0%, #ec4899 ${(currentTime / (duration || 1)) * 100}%, #d8b4fe ${(currentTime / (duration || 1)) * 100}%, #d8b4fe 100%)`
-                        }}
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="relative">
+                      <img
+                        src={trackInfo.album.images[1]?.url || trackInfo.album.images[0]?.url}
+                        alt="album cover"
+                        className="w-20 h-20 border-3 border-black shadow-lg"
+                        style={{ borderRadius: "10px" }}
                       />
-                      <div className="flex justify-between text-xs text-purple-700 font-semibold">
-                        <span>{formatTime(currentTime)}</span>
-                        <span>{formatTime(duration)}</span>
+                      <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20" style={{ borderRadius: "10px" }}></div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-black text-lg text-purple-800 mb-1 drop-shadow truncate">
+                        🎵 {trackInfo.name}
+                      </div>
+                      <div className="text-sm text-purple-600 font-semibold truncate overflow-hidden">
+                        👤 {trackInfo.artists
+                          .slice(0, 2) // Limit to the first 2 artists
+                          .map((a: any) => a.name)
+                          .join(", ")}
+                        {trackInfo.artists.length > 2 && " ..."} {/* Add ellipsis if there are more artists */}
                       </div>
                     </div>
+                  </div>
 
-                    <div className="flex items-center space-x-2">
-                      <Volume2 className="w-4 h-4 text-purple-700" />
-                      <input
-                        type="range"
-                        min={0}
-                        max={1}
-                        step={0.1}
-                        value={volume}
-                        onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                        className="flex-1 h-2 bg-gradient-to-r from-cyan-300 to-pink-300 rounded-lg appearance-none cursor-pointer border-2 border-black"
-                      />
-                      <span className="text-xs text-purple-700 font-semibold w-8">{Math.round(volume * 100)}</span>
+                  {!hasPremium && trackInfo.preview_url && (
+                    <audio
+                      ref={audioRef}
+                      src={trackInfo.preview_url}
+                      style={{ display: 'none' }}
+                      preload="metadata"
+                    />
+                  )}
+
+                  {(hasPremium || trackInfo.preview_url) ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-center space-x-4">
+                        <button
+                          onClick={skipBackward}
+                          className="w-10 h-10 bg-purple-500 hover:bg-purple-600 text-white border-2 border-black shadow-lg transition-all hover:scale-110"
+                          style={{ borderRadius: "50%" }}
+                        >
+                          <SkipBack className="w-5 h-5 mx-auto" />
+                        </button>
+                        
+                        <button
+                          onClick={togglePlay}
+                          disabled={!!(hasPremium && !playerReady)}
+                          className="w-15 h-15 bg-pink-500 hover:bg-pink-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white border-3 border-black shadow-xl transition-all hover:scale-110"
+                          style={{ borderRadius: "50%" }}
+                        >
+                          {isPlaying ? <Pause className="w-7 h-7 mx-auto" /> : <Play className="w-7 h-7 mx-auto" />}
+                        </button>
+                        
+                        <button
+                          onClick={skipForward}
+                          className="w-10 h-10 bg-purple-500 hover:bg-purple-600 text-white border-2 border-black shadow-lg transition-all hover:scale-110"
+                          style={{ borderRadius: "50%" }}
+                        >
+                          <SkipForward className="w-5 h-5 mx-auto" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <input
+                          type="range"
+                          min={0}
+                          max={duration || 0}
+                          value={currentTime}
+                          onChange={handleSeek}
+                          disabled={!!(hasPremium && !playerReady)}
+                          className="w-full h-3 bg-gradient-to-r from-pink-300 to-purple-300 rounded-lg appearance-none cursor-pointer border-2 border-black disabled:opacity-50"
+                          style={{
+                            background: `linear-gradient(to right, #ec4899 0%, #ec4899 ${(currentTime / (duration || 1)) * 100}%, #d8b4fe ${(currentTime / (duration || 1)) * 100}%, #d8b4fe 100%)`
+                          }}
+                        />
+                        <div className="flex justify-between text-xs text-purple-700 font-semibold">
+                          <span>{formatTime(currentTime)}</span>
+                          <span>{formatTime(duration)}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Volume2 className="w-4 h-4 text-purple-700" />
+                        <input
+                          type="range"
+                          min={0}
+                          max={1}
+                          step={0.1}
+                          value={volume}
+                          onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                          className="flex-1 h-2 bg-gradient-to-r from-cyan-300 to-pink-300 rounded-lg appearance-none cursor-pointer border-2 border-black"
+                        />
+                        <span className="text-xs text-purple-700 font-semibold w-8">{Math.round(volume * 100)}</span>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-purple-700 font-semibold mb-2">🚫 No preview available for this track</p>
-                    <a
-                      href={trackInfo.external_urls.spotify}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block mt-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-bold border-2 border-black shadow-lg transition-all hover:scale-105"
-                      style={{ borderRadius: "10px" }}
-                    >
-                      🎧 Listen on Spotify
-                    </a>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+                  ) : (
+                    <div className="text-center py-4">
+                      <p className="text-purple-700 font-semibold mb-2">🚫 No preview available for this track</p>
+                      <a
+                        href={trackInfo.external_urls.spotify}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block mt-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-bold border-2 border-black shadow-lg transition-all hover:scale-105"
+                        style={{ borderRadius: "10px" }}
+                      >
+                        🎧 Listen on Spotify
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
-        {/* Letter Content - Made scrollable */}
-        <div 
-          className="mb-4 p-4 bg-gradient-to-br from-yellow-100 to-pink-100 border-2 border-purple-400 shadow-inner max-h-60 overflow-y-auto"
-          style={{ borderRadius: "12px" }}
-        >
-          <p className="whitespace-pre-wrap text-purple-900 leading-relaxed font-medium">
-            {letter.content}
-          </p>
+          {/* Photo - Sized to match player height without warping */}
+          {letter.photoUrl && (
+            <div className="flex-shrink-0">
+              <img
+                src={letter.photoUrl}
+                alt="letter photo"
+                className="border-4 border-black shadow-xl object-contain"
+                style={{ 
+                  borderRadius: "15px",
+                  maxHeight: letter.songUrl ? "350px" : "300px", // Adjust based on whether player exists
+                  maxWidth: "300px"
+                }}
+              />
+            </div>
+          )}
         </div>
+      </div>
 
-        {/* Photo */}
-        {letter.photoUrl && (
-          <div className="text-center">
-            <img
-              src={letter.photoUrl}
-              alt="letter photo"
-              className="max-w-full max-h-60 border-4 border-black shadow-xl mx-auto"
-              style={{ borderRadius: "15px" }}
-            />
-          </div>
-        )}
+      {/* Bottom Row - Letter Content (Scrollable) */}
+      <div 
+        className="flex-1 p-4 bg-yellow-100 border-4 border-black overflow-y-auto min-h-0"
+        style={{ borderRadius: "12px" }}
+      >
+        <p className="whitespace-pre-wrap text-purple-900 leading-relaxed font-medium">
+          {letter.content}
+        </p>
       </div>
     </div>
-  );
+  </div>
+);
+  
 }
