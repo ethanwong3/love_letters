@@ -50,21 +50,97 @@ export default function LoginPage() {
     e.preventDefault();
     if (!validateFields()) return;
 
-    console.log('API URL:', process.env.NEXT_PUBLIC_API_URL); // Add this line
+    // 🐛 DEBUG: Environment and URL checking
+    console.log('🔍 LOGIN DEBUG INFO:');
+    console.log('  - NEXT_PUBLIC_API_URL from env:', process.env.NEXT_PUBLIC_API_URL);
+    console.log('  - Full login URL:', `${process.env.NEXT_PUBLIC_API_URL}/auth/login`);
+    console.log('  - Email:', email.trim());
+    console.log('  - Password provided:', !!password.trim());
+    console.log('  - Current timestamp:', new Date().toISOString());
+    console.log('  - User agent:', navigator.userAgent);
+    console.log('  - Current origin:', window.location.origin);
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email.trim(), password: password.trim() }),
-    });
+    // Check if API URL is undefined
+    if (!process.env.NEXT_PUBLIC_API_URL) {
+      console.error('❌ NEXT_PUBLIC_API_URL is undefined!');
+      setModalMessage('Configuration error: API URL not set. Check environment variables.');
+      return;
+    }
 
-    const data = await res.json();
-    if (res.ok) {
-      login(data.token, data.user);
-      router.push("/");
-    } else {
-      //alert(data.message || "Login failed");
-      setModalMessage(data.message || "Login failed");
+    try {
+      console.log('📤 Making fetch request...');
+      
+      const requestBody = { 
+        email: email.trim(), 
+        password: password.trim() 
+      };
+      
+      console.log('  - Request body:', requestBody);
+      console.log('  - Request headers: Content-Type: application/json');
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      console.log('📥 Response received:');
+      console.log('  - Status:', res.status);
+      console.log('  - Status Text:', res.statusText);
+      console.log('  - Headers:', Object.fromEntries(res.headers.entries()));
+      console.log('  - OK:', res.ok);
+
+      let data;
+      try {
+        const responseText = await res.text();
+        console.log('  - Raw response text:', responseText);
+        
+        if (responseText) {
+          data = JSON.parse(responseText);
+          console.log('  - Parsed response data:', data);
+        } else {
+          console.log('  - Empty response body');
+          data = {};
+        }
+      } catch (parseError) {
+        console.error('❌ Failed to parse response as JSON:');
+        console.error('  - Parse error:', (parseError as Error).message);
+        console.error('  - Response might not be JSON');
+        data = { message: 'Invalid response from server' };
+      }
+
+      if (res.ok) {
+        console.log('✅ Login successful!');
+        console.log('  - Token received:', !!data.token);
+        console.log('  - User data:', data.user);
+        
+        login(data.token, data.user);
+        router.push("/");
+      } else {
+        console.log('❌ Login failed:');
+        console.log('  - Error message:', data.message);
+        setModalMessage(data.message || "Login failed");
+      }
+
+    } catch (fetchError) {
+      console.error('❌ FETCH ERROR OCCURRED:');
+      console.error('  - Error name:', (fetchError as Error).name);
+      console.error('  - Error message:', (fetchError as Error).message);
+      console.error('  - Error stack:', (fetchError as Error).stack);
+      console.error('  - Error type:', typeof fetchError);
+      
+      // Check for specific error types
+      if ((fetchError as Error).name === 'TypeError' && (fetchError as Error).message.includes('Failed to fetch')) {
+        console.error('🌐 This is likely a network/CORS error:');
+        console.error('  - Check if backend is running');
+        console.error('  - Check CORS configuration');
+        console.error('  - Check if API URL is correct');
+        setModalMessage('Network error: Cannot connect to server. Check your internet connection and try again.');
+      } else {
+        setModalMessage(`Connection error: ${(fetchError as Error).message}`);
+      }
     }
   };
 
