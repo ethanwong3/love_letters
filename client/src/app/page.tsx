@@ -22,7 +22,6 @@ export default function Home() {
     } catch {}
   };
 
-  // redirect to login if not authenticated and show onboarding if first time
   useEffect(() => {
     if (!user) {
       router.push("/login");
@@ -34,7 +33,6 @@ export default function Home() {
     }
   }, [user, router]);
 
-  // initialise dark mode from localStorage
   useEffect(() => {
     try {
       const stored = typeof window !== "undefined" && localStorage.getItem("isDarkMode");
@@ -42,7 +40,6 @@ export default function Home() {
     } catch {}
   }, []);
 
-  // track cursor position for background parallax effect
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setCursorPosition({ x: e.clientX, y: e.clientY });
@@ -74,13 +71,8 @@ export default function Home() {
     router.push("/login");
   };
 
-  // screen dimensions
-  const screenWidth = 680;
-  const screenHeight = 510;
-
-  // handle navigation with zoom animation
   const handleNavigate = (path: "/write" | "/inbox") => {
-    if (isZooming) return; // prevent double clicks
+    if (isZooming) return;
     navTargetRef.current = path;
     setIsZooming(true);
 
@@ -88,6 +80,9 @@ export default function Home() {
       router.push(path);
     }, 800);
   };
+
+  const screenWidth = 600;
+  const screenHeight = 450;
 
   return (
     <div
@@ -100,104 +95,152 @@ export default function Home() {
       }}
     >
       <div className="flex items-center justify-center h-full">
-        {/* Onboarding popup */}
         {showOnboarding && user.email !== "lynettenhan7@gmail.com" && (
           <OnboardingPopup user={user} closeOnboarding={closeOnboarding} />
         )}
 
-        {/* Retro Computer */}
+        {/* Enhanced Retro Computer - More 3D and Bulky */}
         <div
           className="relative flex flex-col items-center"
           style={{
-            backgroundColor: isDarkMode ? "#2b2b2b" : "#fdf5e6",
-            border: `20px solid ${isDarkMode ? "#4a4a4a" : "#e0e0e0"}`,
-            borderRadius: 12,
+            backgroundColor: isDarkMode ? "#1a1a1a" : "#f5f5dc",
+            border: `28px solid ${isDarkMode ? "#333" : "#d4d4aa"}`,
+            borderRadius: 24,
             boxShadow: isDarkMode
               ? `
-                inset -8px -8px 16px rgba(255,255,255,0.1),
-                8px 8px 20px rgba(0,0,0,0.6)
+                inset -12px -12px 24px rgba(255,255,255,0.08),
+                inset 12px 12px 24px rgba(0,0,0,0.5),
+                -8px -8px 16px rgba(255,255,255,0.05),
+                12px 12px 32px rgba(0,0,0,0.7),
+                0 0 0 6px ${isDarkMode ? '#2a2a2a' : '#e5e5c0'},
+                0 0 0 12px ${isDarkMode ? '#404040' : '#cccc99'}
               `
               : `
-                inset -8px -8px 16px rgba(0,0,0,0.2),
-                8px 8px 20px rgba(0,0,0,0.4)
+                inset -12px -12px 24px rgba(0,0,0,0.15),
+                inset 12px 12px 24px rgba(255,255,255,0.8),
+                -8px -8px 16px rgba(255,255,255,0.6),
+                12px 12px 32px rgba(0,0,0,0.3),
+                0 0 0 6px ${isDarkMode ? '#2a2a2a' : '#e5e5c0'},
+                0 0 0 12px ${isDarkMode ? '#404040' : '#cccc99'}
               `,
-            padding: 16,
+            padding: 24,
             transform: "scale(1.4, 1.3)",
           }}
         >
-          {/* Screen */}
+
+          {/* Screen Bezel - More Pronounced */}
           <div
-            className="relative flex flex-col items-center justify-center"
             style={{
-              width: `${screenWidth}px`,
-              height: `${screenHeight}px`,
-              backgroundColor: isDarkMode ? "#001f3f" : "#dff9fb",
-              border: "12px solid #111",
-              color: isDarkMode ? "#00ff00" : "#000",
-              fontSize: 28,
-              fontWeight: "bold",
-              textAlign: "center",
-              boxShadow: `
-                inset -4px -4px 8px rgba(0,0,0,0.4),
-                inset 4px 4px 8px rgba(255,255,255,0.2)
-              `,
-              transformOrigin: "center",
-              // more dramatic zoom when isZooming
-              transform: isZooming ? "scale(10) translateY(-5%)" : "scale(1)",
-              transition: "transform 1200ms cubic-bezier(.25,1,.5,1), opacity 1200ms ease",
-              zIndex: 20,
-              overflow: "hidden",
+              padding: 20,
+              backgroundColor: isDarkMode ? "#1a1a1a" : "#e8e8d0",
+              borderRadius: 16,
+              boxShadow: isDarkMode
+                ? `
+                  inset -6px -6px 12px rgba(255,255,255,0.08),
+                  inset 6px 6px 12px rgba(0,0,0,0.6)
+                `
+                : `
+                  inset -6px -6px 12px rgba(0,0,0,0.2),
+                  inset 6px 6px 12px rgba(255,255,255,0.8)
+                `,
             }}
           >
-            {/* Home screen icons (2x1) */}
-            {screenView === "home" ? (
+            {/* Screen */}
+            <div
+              className="relative flex flex-col items-center justify-center"
+              style={{
+                width: `${screenWidth}px`,
+                height: `${screenHeight}px`,
+                backgroundColor: isDarkMode ? "#001122" : "#e6f7ff",
+                border: "16px solid #0a0a0a",
+                color: isDarkMode ? "#00ff41" : "#003366",
+                fontSize: 28,
+                fontWeight: "bold",
+                textAlign: "center",
+                borderRadius: 8,
+                boxShadow: `
+                  inset -6px -6px 12px rgba(0,0,0,0.8),
+                  inset 6px 6px 12px rgba(255,255,255,0.1),
+                  0 0 20px rgba(0,0,0,0.5)
+                `,
+                transformOrigin: "center",
+                transform: isZooming ? "scale(10) translateY(-5%)" : "scale(1)",
+                transition: "transform 1200ms cubic-bezier(.25,1,.5,1), opacity 1200ms ease",
+                zIndex: 20,
+                overflow: "hidden",
+              }}
+            >
+              {/* Subtle screen reflection effect */}
               <div
-                className="grid grid-cols-2 gap-x-24 gap-y-8 items-center justify-items-center"
-                style={{ width: "62%", marginTop: 6 }}
-              >
-                <IconButton
-                  src="/write.png"
-                  alt="Write"
-                  label="write"
-                  onClick={() => handleNavigate("/write")}
-                  isDarkMode={isDarkMode}
-                />
-                <IconButton
-                  src="/inbox.png"
-                  alt="Inbox"
-                  label="inbox"
-                  onClick={() => handleNavigate("/inbox")}
-                  isDarkMode={isDarkMode}
-                />
-              </div>
-            ) : (
-              <ProfileScreen user={user} isDarkMode={isDarkMode} handleLogout={handleLogout} />
-            )}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 30%, transparent 70%, rgba(255,255,255,0.05) 100%)',
+                  pointerEvents: 'none',
+                  zIndex: 10,
+                }}
+              />
+
+              {screenView === "home" ? (
+                <div
+                  className="grid grid-cols-2 gap-x-24 gap-y-8 items-center justify-items-center"
+                  style={{ width: "62%", marginTop: 6 }}
+                >
+                  <IconButton
+                    src="/write.png"
+                    alt="Write"
+                    label="write"
+                    onClick={() => handleNavigate("/write")}
+                    isDarkMode={isDarkMode}
+                  />
+                  <IconButton
+                    src="/inbox.png"
+                    alt="Inbox"
+                    label="inbox"
+                    onClick={() => handleNavigate("/inbox")}
+                    isDarkMode={isDarkMode}
+                  />
+                </div>
+              ) : (
+                <ProfileScreen user={user} isDarkMode={isDarkMode} handleLogout={handleLogout} />
+              )}
+            </div>
           </div>
 
-          {/* Bottom Controls: left spacer, center toggle, right small buttons */}
-          <div className="flex items-center justify-between mt-4 w-full px-2">
-            {/* Left spacer to keep toggle centered */}
+          {/* Enhanced Control Panel */}
+          <div className="flex items-center justify-between mt-6 w-full px-2">
             <div style={{ width: 160 }} />
 
-            {/* Center: Light/Dark Toggle */}
+            {/* Center: Enhanced Toggle Button */}
             <div style={{ display: "flex", justifyContent: "center", width: 200 }}>
               <button
                 onClick={toggleDarkMode}
                 className="flex items-center justify-center"
                 style={{
-                  width: "160px",
-                  height: "40px",
-                  borderRadius: "4px",
-                  backgroundColor: isDarkMode ? "#1c1c1c" : "#eaeaea",
-                  border: `2px solid ${isDarkMode ? "#1c1c1c" : "#ccc"}`,
+                  width: "180px",
+                  height: "48px",
+                  borderRadius: "8px",
+                  backgroundColor: isDarkMode ? "#0f0f0f" : "#f0f0f0",
+                  border: `4px solid ${isDarkMode ? "#1a1a1a" : "#d0d0d0"}`,
                   boxShadow: isDarkMode
-                    ? "inset -2px -2px 6px rgba(255,255,255,0.1), inset 2px 2px 6px rgba(0,0,0,0.8)"
-                    : "inset -2px -2px 4px rgba(0,0,0,0.3), inset 2px 2px 4px rgba(255,255,255,0.7)",
-                  color: isDarkMode ? "#a6a6a6" : "#333",
+                    ? `
+                      -2px -2px 4px rgba(255,255,255,0.05),
+                      2px 2px 8px rgba(0,0,0,0.4)
+                    `
+                    : `
+                      inset -4px -4px 8px rgba(0,0,0,0.2),
+                      inset 4px 4px 8px rgba(255,255,255,0.8),
+                      -2px -2px 4px rgba(255,255,255,0.6),
+                      2px 2px 8px rgba(0,0,0,0.2)
+                    `,
+                  color: isDarkMode ? "#999" : "#333",
                   cursor: "pointer",
                   fontSize: "16px",
                   fontWeight: "bold",
+                  transition: "all 0.15s ease",
                 }}
               >
                 {isDarkMode ? (
@@ -212,23 +255,21 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Right: Home & Profile — retro, not glossy */}
-            <div className="flex gap-5 items-center justify-end" style={{ width: 160 }}>
+            {/* Right: Enhanced Circle Buttons */}
+            <div className="flex gap-6 items-center justify-end" style={{ width: 160 }}>
               <CircleButton
                 ariaLabel="Home"
-                onClick={() => {
-                  setScreenView("home");
-                }}
+                onClick={() => setScreenView("home")}
                 icon={<HomeIcon className="w-5 h-5" />}
                 isDarkMode={isDarkMode}
+                active={screenView === "home"}
               />
               <CircleButton
                 ariaLabel="Profile"
-                onClick={() => {
-                  setScreenView("profile");
-                }}
+                onClick={() => setScreenView("profile")}
                 icon={<UserIcon className="w-5 h-5" />}
                 isDarkMode={isDarkMode}
+                active={screenView === "profile"}
               />
             </div>
           </div>
@@ -238,7 +279,6 @@ export default function Home() {
   );
 }
 
-/* ---------- ICON BUTTON (image-based, bigger, hover effects) ---------- */
 function IconButton({
   src,
   alt,
@@ -298,39 +338,46 @@ function IconButton({
   );
 }
 
-/* ---------- SMALL RETRO CIRCLE BUTTON ---------- */
 function CircleButton({
   icon,
   onClick,
   ariaLabel,
   isDarkMode,
+  active,
 }: {
   icon: React.ReactNode;
   onClick: () => void;
   ariaLabel?: string;
   isDarkMode: boolean;
+  active?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
       aria-label={ariaLabel}
       style={{
-        width: 40,
-        height: 40,
-        borderRadius: "4px", 
-        background: isDarkMode
-          ? "#1c1c1c"
-          : "#e3e3e3",
-        border: `2px solid ${isDarkMode ? "#1c1c1c" : "#ccc"}`,
+        width: 48,
+        height: 48,
+        borderRadius: "8px",
+        background: isDarkMode ? "#0f0f0f" : "#e8e8e8",
+        border: `3px solid ${isDarkMode ? "#1a1a1a" : "#ccc"}`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         cursor: "pointer",
-        color: isDarkMode ? "#a6a6a6" : "#333",
-
+        color: isDarkMode ? "#999" : "#333",
         boxShadow: isDarkMode
-          ? "inset -2px -2px 6px rgba(255,255,255,0.1), inset 2px 2px 6px rgba(0,0,0,0.8)"
-          : "inset -2px -2px 4px rgba(0,0,0,0.3), inset 2px 2px 4px rgba(255,255,255,0.7)",
+          ? `
+            -1px -1px 2px rgba(255,255,255,0.05),
+            1px 1px 4px rgba(0,0,0,0.3)
+          `
+          : `
+            inset -3px -3px 6px rgba(0,0,0,0.2),
+            inset 3px 3px 6px rgba(255,255,255,0.8),
+            -1px -1px 2px rgba(255,255,255,0.6),
+            1px 1px 4px rgba(0,0,0,0.2)
+          `,
+        transition: "all 0.15s ease",
       }}
     >
       <div style={{ width: 20, height: 20 }}>{icon}</div>
@@ -338,8 +385,6 @@ function CircleButton({
   );
 }
 
-
-/* ---------- PROFILE SCREEN ---------- */
 function ProfileScreen({
   user,
   isDarkMode,
@@ -361,9 +406,7 @@ function ProfileScreen({
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      console.log("Received message:", event.data);
       if (event.data && event.data.access_token) {
-        console.log("Storing Spotify access token:", event.data.access_token);
         localStorage.setItem("spotifyAccessToken", event.data.access_token);
         setSpotifyConnected(true);
       }
@@ -373,9 +416,7 @@ function ProfileScreen({
   }, []);
 
   const connectSpotify = () => {
-    console.log("Connecting to Spotify...");
-    const w = 500,
-      h = 600;
+    const w = 500, h = 600;
     const topWindow = window.top ?? window;
     const y = topWindow.outerHeight / 2 + topWindow.screenY - h / 2;
     const x = topWindow.outerWidth / 2 + topWindow.screenX - w / 2;
@@ -387,7 +428,6 @@ function ProfileScreen({
   };
 
   const disconnectSpotify = () => {
-    console.log("Disconnecting Spotify...");
     localStorage.removeItem("spotifyAccessToken");
     setSpotifyConnected(false);
   };
@@ -405,7 +445,6 @@ function ProfileScreen({
         color: isDarkMode ? "#e0e0e0" : "#111",
       }}
     >
-      {/* Header */}
       <div
         style={{
           fontSize: 24,
@@ -417,7 +456,6 @@ function ProfileScreen({
         PROFILE
       </div>
 
-      {/* Info card */}
       <div
         style={{
           alignSelf: "center",
@@ -433,38 +471,17 @@ function ProfileScreen({
           fontSize: 16,
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            gap: 20,
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 20 }}>
           <span style={{ fontWeight: 600 }}>name:</span>
           <span>{user.displayName}</span>
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            gap: 20,
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 20 }}>
           <span style={{ fontWeight: 600 }}>email:</span>
           <span>{user.email}</span>
         </div>
       </div>
 
-      {/* Actions row: Spotify + Logout */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 20,
-          marginTop: 10,
-        }}
-      >
-        {/* Spotify Button */}
+      <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 10 }}>
         {spotifyConnected ? (
           <button
             onClick={disconnectSpotify}
@@ -506,13 +523,10 @@ function ProfileScreen({
               alt="spotify"
               style={{ width: 22, height: 22 }}
             />
-            <span style={{ fontWeight: 600, fontSize: 14 }}>
-              Connect
-            </span>
+            <span style={{ fontWeight: 600, fontSize: 14 }}>Connect</span>
           </button>
         )}
 
-        {/* Logout Button */}
         <button
           onClick={handleLogout}
           style={{
@@ -533,7 +547,6 @@ function ProfileScreen({
         </button>
       </div>
 
-      {/* Under Development System Error */}
       <div
         style={{
           display: "flex",
@@ -576,7 +589,6 @@ function ProfileScreen({
   );
 }
 
-/* ---------- ONBOARDING POPUP ---------- */
 function OnboardingPopup({ user, closeOnboarding }: any) {
   return (
     <div
@@ -597,7 +609,6 @@ function OnboardingPopup({ user, closeOnboarding }: any) {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Title Bar */}
         <div
           className="flex justify-between items-center px-2 py-1"
           style={{
@@ -635,9 +646,7 @@ function OnboardingPopup({ user, closeOnboarding }: any) {
           </button>
         </div>
 
-        {/* Body */}
         <div className="flex p-6 gap-6">
-          {/* Cat Image */}
           <div className="flex items-center justify-center">
             <img
               src="/cat7.jpeg"
@@ -646,7 +655,6 @@ function OnboardingPopup({ user, closeOnboarding }: any) {
             />
           </div>
 
-          {/* Text */}
           <div className="flex-1 text-sm text-black leading-relaxed">
             <p className="mb-4">
               Hey <strong>{user.displayName}</strong>! <br />
@@ -656,8 +664,8 @@ function OnboardingPopup({ user, closeOnboarding }: any) {
               friends and family have written for her.
             </p>
             <p>
-              When you close this message, you’ll find icons to write, edit,
-              send, and personalise letters with music and photos. Don’t forget
+              When you close this message, you'll find icons to write, edit,
+              send, and personalise letters with music and photos. Don't forget
               to send them to the user named{" "}
               <em>
                 <span className="text-pink-500">lyn</span>
@@ -667,7 +675,6 @@ function OnboardingPopup({ user, closeOnboarding }: any) {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex justify-center p-4 pt-0">
           <button
             onClick={closeOnboarding}
