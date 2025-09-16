@@ -18,8 +18,7 @@ async function bootstrap() {
     console.log('🌐 Configuring CORS...');
     const allowedOrigins = [
       'http://localhost:3000',
-      'https://your-vercel-app.vercel.app', // Replace with your actual Vercel URL
-      process.env.FRONTEND_URL, // Add this env var in Render if you want
+      'https://love-letters-gamma.vercel.app',
     ].filter(Boolean); // Remove any undefined values
 
     console.log('  - Allowed CORS origins:', allowedOrigins);
