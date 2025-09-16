@@ -18,6 +18,16 @@ interface UploadState {
   error?: string;
 }
 
+interface SpotifyArtist { name: string; id: string; }
+interface SpotifyImage { url: string; height?: number; width?: number; }
+interface SpotifyAlbum { images: SpotifyImage[]; }
+interface SpotifyTrack {
+  id: string;
+  name: string;
+  album: SpotifyAlbum;
+  artists: SpotifyArtist[];
+}
+
 export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
   const { user } = useAuth();
   const [subject, setSubject] = useState("");
@@ -25,8 +35,8 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
     `Dear ${recipient.displayName},\n\nWrite your message here.\n\nFrom,\n${user.displayName}`
   );
   const [songQuery, setSongQuery] = useState("");
-  const [songResults, setSongResults] = useState<any[]>([]);
-  const [selectedSong, setSelectedSong] = useState<any | null>(null);
+  const [songResults, setSongResults] = useState<SpotifyTrack[]>([]);
+  const [selectedSong, setSelectedSong] = useState<SpotifyTrack | null>(null);
 
   const [photo, setPhoto] = useState<File | null>(null);
   const [uploadState, setUploadState] = useState<UploadState>({ status: 'idle' });
@@ -267,17 +277,17 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
     }
     
     try {
-      const results = await apiFetch<any>(
-        `/spotify/search?query=${encodeURIComponent(songQuery)}`, {
-          headers: {
-            Authorization: `Bearer ${tokenjwt}`,
-            "Spotify-Access-Token": token,
-          },
-        }
+      const results = await apiFetch<{ tracks: { items: SpotifyTrack[] } }>(
+        `/spotify/search?query=${encodeURIComponent(songQuery)}`, 
+        { headers: { Authorization: `Bearer ${tokenjwt}`, "Spotify-Access-Token": token } }
       );
       setSongResults(results.tracks.items);
-    } catch (err: any) {
-      setError("Spotify search failed: " + (err.message || "Unexpected error"));
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Unexpected error occurred");
+      }
     }
   }
 

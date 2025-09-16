@@ -2,8 +2,20 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useAuth } from "../context/AuthContext";
 import { SunIcon, MoonIcon, HomeIcon, UserIcon } from "@heroicons/react/24/solid";
+
+// Type definitions
+interface User {
+  displayName: string;
+  email: string;
+}
+
+interface OnboardingPopupProps {
+  user: User;
+  closeOnboarding: () => void;
+}
 
 export default function Home() {
   const { user, logout } = useAuth();
@@ -307,14 +319,6 @@ function IconButton({
     cursor: "pointer",
   };
 
-  const imgStyle: React.CSSProperties = {
-    width: 150,
-    height: 150,
-    objectFit: "contain",
-    display: "block",
-    pointerEvents: "none",
-  };
-
   const labelStyle: React.CSSProperties = {
     marginTop: 8,
     fontSize: 18,
@@ -331,7 +335,17 @@ function IconButton({
       aria-label={label}
     >
       <div style={wrapperStyle}>
-        <img src={src} alt={alt} style={imgStyle} />
+        <Image
+          src={src}
+          alt={alt}
+          width={150}
+          height={150}
+          style={{
+            objectFit: "contain",
+            display: "block",
+            pointerEvents: "none",
+          }}
+        />
       </div>
       <div style={labelStyle}>{label}</div>
     </button>
@@ -343,7 +357,6 @@ function CircleButton({
   onClick,
   ariaLabel,
   isDarkMode,
-  active,
 }: {
   icon: React.ReactNode;
   onClick: () => void;
@@ -390,7 +403,7 @@ function ProfileScreen({
   isDarkMode,
   handleLogout,
 }: {
-  user: any;
+  user: User;
   isDarkMode: boolean;
   handleLogout: () => void;
 }) {
@@ -497,10 +510,11 @@ function ProfileScreen({
               fontSize: 14,
             }}
           >
-            <img
+            <Image
               src={isDarkMode ? "/spotifydark.jpeg" : "/spotifylight.jpeg"}
               alt="spotify"
-              style={{ width: 22, height: 22 }}
+              width={22}
+              height={22}
             />
             Connected
           </button>
@@ -518,10 +532,11 @@ function ProfileScreen({
               cursor: "pointer",
             }}
           >
-            <img
+            <Image
               src={isDarkMode ? "/spotifydark.jpeg" : "/spotifylight.jpeg"}
               alt="spotify"
-              style={{ width: 22, height: 22 }}
+              width={22}
+              height={22}
             />
             <span style={{ fontWeight: 600, fontSize: 14 }}>Connect</span>
           </button>
@@ -558,12 +573,12 @@ function ProfileScreen({
           padding: 15,
         }}
       >
-        <img
+        <Image
           src="/gengar3.jpeg"
           alt="gengar error"
+          width={200}
+          height={200}
           style={{
-            width: 200,
-            height: 200,
             objectFit: "cover",
             border: `2px solid ${panelBorder}`,
           }}
@@ -589,7 +604,7 @@ function ProfileScreen({
   );
 }
 
-function OnboardingPopup({ user, closeOnboarding }: any) {
+function OnboardingPopup({ user, closeOnboarding }: OnboardingPopupProps) {
   return (
     <div
       className="fixed inset-0 flex items-center justify-center z-50"
@@ -648,10 +663,12 @@ function OnboardingPopup({ user, closeOnboarding }: any) {
 
         <div className="flex p-6 gap-6">
           <div className="flex items-center justify-center">
-            <img
+            <Image
               src="/cat7.jpeg"
               alt="Cat"
-              className="w-40 h-40 object-cover border border-black"
+              width={160}
+              height={160}
+              className="object-cover border border-black"
             />
           </div>
 
@@ -664,9 +681,9 @@ function OnboardingPopup({ user, closeOnboarding }: any) {
               friends and family have written for her.
             </p>
             <p>
-              When you close this message, you'll find icons to write, edit,
-              send, and personalise letters with music and photos. Don't forget
-              to send them to the user named{" "}
+              When you close this message, you&apos;ll find icons to write, edit,
+              send, and personalise letters with music and photos. Don&apos;t forget
+              to send them to the user named
               <em>
                 <span className="text-pink-500">lyn</span>
               </em>
