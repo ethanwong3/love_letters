@@ -50,7 +50,7 @@ export default function LoginPage() {
     e.preventDefault();
     if (!validateFields()) return;
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/auth/login`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: email.trim(), password: password.trim() }),
