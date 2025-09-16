@@ -3,9 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import type { User } from "@/types/user";
+import type { Letter } from "@/types/letter";
+import Image from 'next/image';
 
 type Props = {
-  letter: any;
+  letter: Letter;
   onClick: () => void;
 };
 
@@ -23,7 +25,7 @@ export default function LetterIcon({ letter, onClick }: Props) {
     } catch (err) {
       console.log("Could not fetch author display name:", err);
     }
-  }, []);
+  }, [letter.authorId]);
 
   return (
     <div
@@ -32,10 +34,12 @@ export default function LetterIcon({ letter, onClick }: Props) {
     >
       {/* Letter Icon */}
       <div className="relative mb-2">
-        <img
+        <Image
           src={isOpened ? "/mailopened.png" : "/mail.png"}
           alt="letter icon"
-          className="w-16 h-16 mx-auto"
+          width={64}
+          height={64}
+          className="mx-auto"
         />
       </div>
       

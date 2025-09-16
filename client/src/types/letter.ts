@@ -4,6 +4,7 @@ export interface Letter {
   recipientId: string;
   subject?: string;
   content: string;
+  photoUrl?: string;
   songUrl?: string;
   status: "DRAFT" | "SCHEDULED" | "SENT" | "OPENED";
   createdAt: string;

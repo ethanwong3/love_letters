@@ -32,15 +32,6 @@ export default function LetterModal({ letter, onClose }: Props) {
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [connectionAttempts, setConnectionAttempts] = useState(0);
   const maxConnectionAttempts = 3;
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => {
-    if (localStorage.getItem('isDarkMode') === 'true') {
-      setIsDarkMode(true);
-    } else {
-      setIsDarkMode(false);
-    }
-  }, []);
 
   // Timer for Spotify player position updates
   useEffect(() => {
