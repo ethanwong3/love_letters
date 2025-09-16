@@ -3,51 +3,54 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import RecipientSearch from "./components/RecipientSearch";
 import LetterEditor from "./components/LetterEditor";
-import ScheduleSend from "./components/ScheduleSend";
-import Confirmation from "./components/Confirmation";
 import type { User } from "@/types/user";
-import type { Letter } from "@/types/letter";
 
 export default function WritePage() {
   const router = useRouter();
-  const [step, setStep] = useState<"search" | "editor" | "schedule" | "done">("search");
+  const [step, setStep] = useState<"search" | "editor">("search");
   const [recipient, setRecipient] = useState<User | null>(null);
-  const [letter, setLetter] = useState<Letter | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | undefined>(undefined);
+
+  const handleLetterComplete = (success: boolean, message?: string) => {
+    if (success) {
+      setSuccessMessage(message || "Letter sent successfully!");
+      setRecipient(null);
+      setStep("search");
+    }
+  };
+
+  const handleBackToHome = () => {
+    router.push("/");
+  };
+
+  const handleBackToSearch = () => {
+    setRecipient(null);
+    setStep("search");
+    setSuccessMessage('');
+  };
+
+  const handleSelectRecipient = (user: User) => {
+    setRecipient(user);
+    setSuccessMessage(''); // Clear any previous success message
+    setStep("editor");
+  };
 
   return (
-    <div
-      className="max-w-3xl mx-auto py-8"
-    >
-      <button
-        onClick={() => router.push("/")}
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        Go Back to Homepage
-      </button>
+    <div className="min-h-screen">
       {step === "search" && (
         <RecipientSearch
-          onSelect={(user) => {
-            setRecipient(user);
-            setStep("editor");
-          }}
+          onSelect={handleSelectRecipient}
+          onBack={handleBackToHome}
+          successMessage={successMessage || undefined}
         />
       )}
       {step === "editor" && recipient && (
         <LetterEditor
           recipient={recipient}
-          onDraft={(draft) => {
-            setLetter(draft);
-            setStep("schedule");
-          }}
+          onComplete={handleLetterComplete}
+          onBack={handleBackToSearch}
         />
       )}
-      {step === "schedule" && letter && (
-        <ScheduleSend
-          letter={letter}
-          onFinish={() => setStep("done")}
-        />
-      )}
-      {step === "done" && <Confirmation />}
     </div>
   );
 }
