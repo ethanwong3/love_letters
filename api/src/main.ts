@@ -23,6 +23,6 @@ async function bootstrap() {
   // (We’ll enable Throttler after adding ThrottlerModule)
   // app.useGlobalGuards(new ThrottlerGuard());
 
-  await app.listen(4000);
+  await app.listen(process.env.PORT || 3000);
 }
 bootstrap();
