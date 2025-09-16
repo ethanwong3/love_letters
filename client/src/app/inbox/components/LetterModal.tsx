@@ -303,18 +303,29 @@ export default function LetterModal({ letter, onClose }: Props) {
         return Promise.race([
           spotifyPlayer.connect(),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Connection timeout')), 10000)
+            setTimeout(() => reject(new Error('Connection timeout')), 15000) // Increased timeout
           )
         ]);
       };
 
-      const success = await connectWithTimeout();
-      
-      if (success) {
-        console.log('Successfully connected to Spotify!');
-        setPlayer(spotifyPlayer);
-      } else {
-        throw new Error('Failed to connect to Spotify');
+      try {
+        const success = await connectWithTimeout();
+        
+        if (success) {
+          console.log('Successfully connected to Spotify!');
+          setPlayer(spotifyPlayer);
+        } else {
+          throw new Error('Failed to connect to Spotify');
+        }
+      } catch (error: any) {
+        // Handle timeout more gracefully
+        if (error.message === 'Connection timeout') {
+          console.warn('Spotify connection timed out, falling back to preview mode');
+          setHasPremium(false);
+          setError('Spotify connection timed out. Using preview mode instead.');
+          return; // Exit early instead of retrying
+        }
+        throw error; // Re-throw other errors
       }
 
     } catch (error: any) {
