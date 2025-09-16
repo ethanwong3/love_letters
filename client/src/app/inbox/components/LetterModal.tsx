@@ -33,21 +33,110 @@ export default function LetterModal({ letter, onClose }: Props) {
   const [connectionAttempts, setConnectionAttempts] = useState(0);
   const maxConnectionAttempts = 3;
 
+  // Timer for Spotify player position updates
+  useEffect(() => {
+    if (!hasPremium || !player || !playerReady || !isPlaying) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const state = await player.getCurrentState();
+        if (state && !state.paused) {
+          const position = Math.floor(state.position / 1000);
+          const trackDuration = Math.floor(state.duration / 1000);
+          
+          setCurrentTime(position);
+          
+          // Handle end of track
+          if (position >= trackDuration - 1) {
+            setIsPlaying(false);
+            setCurrentTime(0);
+            player.pause().catch(console.error);
+          }
+        }
+      } catch (error) {
+        console.error('Error getting player state:', error);
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [hasPremium, player, playerReady, isPlaying]);
+
+  const cleanup = async () => {
+    console.log("Cleaning up LetterModal...");
+    
+    // Stop HTML5 audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current.src = "";
+    }
+    
+    // Stop Spotify player
+    if (player) {
+      try {
+        await player.pause();
+        player.disconnect();
+      } catch (error) {
+        console.error("Error stopping Spotify player:", error);
+      }
+    }
+    
+    setIsPlaying(false);
+    setCurrentTime(0);
+  };
+
+  // Enhanced onClose to include cleanup
+  const handleClose = async () => {
+    await cleanup();
+    onClose();
+  };
+
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = volume; // Set volume programmatically
+      audioRef.current.volume = volume;
     }
   }, [volume]);
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        // Call cleanup synchronously, then close
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+          audioRef.current.src = "";
+        }
+        
+        if (player) {
+          player.pause().catch(console.error);
+          player.disconnect();
+        }
+        
+        setIsPlaying(false);
+        setCurrentTime(0);
         onClose();
       }
     };
     window.addEventListener("mousedown", handleOutsideClick);
     return () => window.removeEventListener("mousedown", handleOutsideClick);
-  }, [onClose]);
+  }, [player, onClose]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Use a separate cleanup for unmount that doesn't need to be async
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current.src = "";
+      }
+      
+      if (player) {
+        player.pause().catch(console.error);
+        player.disconnect();
+      }
+    };
+  }, []);
 
   // Check if SDK is already loaded
   useEffect(() => {
@@ -66,7 +155,6 @@ export default function LetterModal({ letter, onClose }: Props) {
   }, []);
 
   const loadSpotifySDK = () => {
-    // Check if script is already loaded
     const existingScript = document.querySelector('script[src="https://sdk.scdn.co/spotify-player.js"]');
     if (existingScript) {
       if (window.Spotify && window.Spotify.Player) {
@@ -106,7 +194,6 @@ export default function LetterModal({ letter, onClose }: Props) {
     }
 
     try {
-      // Check if user has premium
       const response = await fetch('https://api.spotify.com/v1/me', {
         headers: { 'Authorization': `Bearer ${spotifyToken}` }
       });
@@ -147,14 +234,13 @@ export default function LetterModal({ letter, onClose }: Props) {
 
     try {
       const spotifyPlayer = new window.Spotify.Player({
-        name: `Love Letter Player ${Date.now()}`, // Unique name to avoid conflicts
+        name: `Love Letter Player ${Date.now()}`,
         getOAuthToken: (cb: (token: string) => void) => {
           cb(spotifyToken);
         },
         volume: volume
       });
 
-      // Error handling
       spotifyPlayer.addListener('initialization_error', ({ message }: any) => {
         console.error('Initialization error:', message);
         setError(`Failed to initialize: ${message}`);
@@ -176,34 +262,43 @@ export default function LetterModal({ letter, onClose }: Props) {
         setError(`Playback failed: ${message}`);
       });
 
-      // Playback status updates
+      // Fixed player state listener
       spotifyPlayer.addListener('player_state_changed', (state: any) => {
         if (!state) {
           console.log('Player state is null');
+          setIsPlaying(false);
           return;
         }
 
         console.log('Player state changed:', state);
-        setIsPlaying(!state.paused);
-        setCurrentTime(state.position / 1000);
-        setDuration(state.duration / 1000);
+        const paused = state.paused;
+        const position = Math.floor(state.position / 1000);
+        const trackDuration = Math.floor(state.duration / 1000);
+        
+        setIsPlaying(!paused);
+        setCurrentTime(position);
+        setDuration(trackDuration);
+        
+        // Handle end of track
+        if (position >= trackDuration - 1 && !paused) {
+          setIsPlaying(false);
+          setCurrentTime(0);
+          spotifyPlayer.pause().catch(console.error);
+        }
       });
 
-      // Ready
       spotifyPlayer.addListener('ready', ({ device_id }: any) => {
         console.log('Player ready with Device ID:', device_id);
         setDeviceId(device_id);
         setPlayerReady(true);
-        setError(null); // Clear any previous errors
+        setError(null);
       });
 
-      // Not ready
       spotifyPlayer.addListener('not_ready', ({ device_id }: any) => {
         console.log('Device ID has gone offline:', device_id);
         setPlayerReady(false);
       });
 
-      // Connect to the player with timeout
       const connectWithTimeout = () => {
         return Promise.race([
           spotifyPlayer.connect(),
@@ -228,7 +323,6 @@ export default function LetterModal({ letter, onClose }: Props) {
       
       if (connectionAttempts < maxConnectionAttempts) {
         setError(`Connection attempt ${connectionAttempts + 1}/${maxConnectionAttempts} failed. Retrying...`);
-        // Retry after delay
         setTimeout(() => {
           initializePlayer();
         }, 2000);
@@ -269,26 +363,72 @@ export default function LetterModal({ letter, onClose }: Props) {
     fetchTrackInfo();
   }, [letter.songUrl]);
 
-  // Audio event listeners for preview mode
+  // Fixed audio event listeners for preview mode
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || hasPremium) return;
 
-    const updateTime = () => setCurrentTime(audio.currentTime);
-    const updateDuration = () => setDuration(audio.duration);
-    const handleEnded = () => setIsPlaying(false);
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
+    let timeUpdateInterval: NodeJS.Timeout;
 
-    audio.addEventListener("timeupdate", updateTime);
+    const updateTime = () => {
+      if (!audio.paused && !audio.ended) {
+        setCurrentTime(Math.floor(audio.currentTime));
+        
+        // Check if we're near the end
+        if (audio.currentTime >= audio.duration - 0.1) {
+          setIsPlaying(false);
+          setCurrentTime(0);
+          audio.currentTime = 0;
+          audio.pause();
+        }
+      }
+    };
+    
+    const updateDuration = () => {
+      if (audio.duration && !isNaN(audio.duration)) {
+        setDuration(Math.floor(audio.duration));
+      }
+    };
+    
+    const handleEnded = () => {
+      setIsPlaying(false);
+      setCurrentTime(0);
+      audio.currentTime = 0;
+    };
+    
+    const handlePlay = () => {
+      setIsPlaying(true);
+      // Use interval for more reliable time updates
+      timeUpdateInterval = setInterval(updateTime, 100);
+    };
+    
+    const handlePause = () => {
+      setIsPlaying(false);
+      if (timeUpdateInterval) {
+        clearInterval(timeUpdateInterval);
+      }
+    };
+    
+    const handleLoadedData = () => {
+      updateDuration();
+    };
+
     audio.addEventListener("loadedmetadata", updateDuration);
+    audio.addEventListener("loadeddata", handleLoadedData);
+    audio.addEventListener("canplaythrough", updateDuration);
     audio.addEventListener("ended", handleEnded);
     audio.addEventListener("play", handlePlay);
     audio.addEventListener("pause", handlePause);
+    audio.addEventListener("timeupdate", updateTime);
 
     return () => {
+      if (timeUpdateInterval) {
+        clearInterval(timeUpdateInterval);
+      }
       audio.removeEventListener("timeupdate", updateTime);
       audio.removeEventListener("loadedmetadata", updateDuration);
+      audio.removeEventListener("loadeddata", handleLoadedData);
+      audio.removeEventListener("canplaythrough", updateDuration);
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
@@ -325,18 +465,23 @@ export default function LetterModal({ letter, onClose }: Props) {
 
   const togglePlay = async () => {
     if (hasPremium && playerReady) {
-      // Premium mode with Web Playback SDK
       if (!isPlaying) {
-        await playSpotifyTrack();
+        // Resume playback at current position
+        if (currentTime > 0) {
+          await player.resume();
+        } else {
+          await playSpotifyTrack();
+        }
       } else {
         await player.pause();
       }
     } else if (!hasPremium && audioRef.current) {
-      // Preview mode with HTML audio
       try {
         if (isPlaying) {
           audioRef.current.pause();
+          // Don't reset currentTime when pausing
         } else {
+          // Resume from current position (HTML5 audio automatically maintains position)
           await audioRef.current.play();
         }
       } catch (error) {
@@ -377,12 +522,13 @@ export default function LetterModal({ letter, onClose }: Props) {
     }
   };
 
+  // Fixed seek handler
   const handleSeek = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTime = parseFloat(e.target.value);
     setCurrentTime(newTime);
     
     if (hasPremium && player && playerReady) {
-      await player.seek(newTime * 1000);
+      await player.seek(newTime * 1000); // Spotify expects milliseconds
     } else if (!hasPremium && audioRef.current) {
       audioRef.current.currentTime = newTime;
     }
@@ -413,7 +559,7 @@ export default function LetterModal({ letter, onClose }: Props) {
     <div className="fixed inset-0 bg-gradient-to-br from-purple-900/90 to-pink-900/90 flex items-center justify-center z-50 backdrop-blur-sm">
       <div
         ref={modalRef}
-        className="bg-gradient-to-br from-pink-100 to-purple-100 border-4 border-black p-6 max-w-2xl w-full mx-4 shadow-2xl relative overflow-hidden"
+        className="bg-gradient-to-br from-pink-100 to-purple-100 border-4 border-black p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl relative"
         style={{
           borderRadius: "20px",
           boxShadow: "0 0 30px rgba(255, 20, 147, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.3)",
@@ -428,7 +574,7 @@ export default function LetterModal({ letter, onClose }: Props) {
         </div>
 
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-4 right-4 z-10 w-10 h-10 bg-red-500 hover:bg-red-600 text-white font-bold text-xl border-2 border-black shadow-lg transition-all hover:scale-110"
           style={{ borderRadius: "50%" }}
         >
@@ -474,16 +620,13 @@ export default function LetterModal({ letter, onClose }: Props) {
                 className="bg-gradient-to-r from-cyan-200 to-pink-200 border-4 border-black p-4 shadow-lg relative overflow-hidden"
                 style={{ borderRadius: "15px" }}
               >
-                {/* Player decorative elements */}
                 <div className="absolute top-2 right-2 w-4 h-4 bg-red-400 rounded-full animate-pulse"></div>
                 <div className="absolute bottom-2 left-2 w-3 h-3 bg-green-400 rounded-full"></div>
 
-                {/* Player Status */}
                 <div className={`${getPlayerStatusColor()} border-2 p-2 rounded-lg text-xs mb-4`}>
                   🎵 {getPlayerStatus()}
                 </div>
 
-                {/* Album and Track Info */}
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="relative">
                     <img
@@ -507,19 +650,17 @@ export default function LetterModal({ letter, onClose }: Props) {
                   </div>
                 </div>
 
-                {/* Audio element for preview playback */}
                 {!hasPremium && trackInfo.preview_url && (
                   <audio
                     ref={audioRef}
                     src={trackInfo.preview_url}
                     style={{ display: 'none' }}
+                    preload="metadata"
                   />
                 )}
 
-                {/* Player Controls */}
                 {(hasPremium || trackInfo.preview_url) ? (
                   <div className="space-y-3">
-                    {/* Control Buttons */}
                     <div className="flex items-center justify-center space-x-4">
                       <button
                         onClick={skipBackward}
@@ -535,7 +676,7 @@ export default function LetterModal({ letter, onClose }: Props) {
                         className="w-16 h-16 bg-pink-500 hover:bg-pink-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white border-3 border-black shadow-xl transition-all hover:scale-110 animate-pulse"
                         style={{ borderRadius: "50%" }}
                       >
-                        {isPlaying ? <Pause className="w-7 h-7 mx-auto" /> : <Play className="w-7 h-7 mx-auto ml-1" />}
+                        {isPlaying ? <Pause className="w-7 h-7 mx-auto" /> : <Play className="w-7 h-7 mx-auto" />}
                       </button>
                       
                       <button
@@ -547,7 +688,6 @@ export default function LetterModal({ letter, onClose }: Props) {
                       </button>
                     </div>
 
-                    {/* Progress Bar */}
                     <div className="space-y-2">
                       <input
                         type="range"
@@ -567,7 +707,6 @@ export default function LetterModal({ letter, onClose }: Props) {
                       </div>
                     </div>
 
-                    {/* Volume Control */}
                     <div className="flex items-center space-x-2">
                       <Volume2 className="w-4 h-4 text-purple-700" />
                       <input
@@ -601,9 +740,9 @@ export default function LetterModal({ letter, onClose }: Props) {
           </div>
         )}
 
-        {/* Letter Content */}
+        {/* Letter Content - Made scrollable */}
         <div 
-          className="mb-4 p-4 bg-gradient-to-br from-yellow-100 to-pink-100 border-2 border-purple-400 shadow-inner"
+          className="mb-4 p-4 bg-gradient-to-br from-yellow-100 to-pink-100 border-2 border-purple-400 shadow-inner max-h-60 overflow-y-auto"
           style={{ borderRadius: "12px" }}
         >
           <p className="whitespace-pre-wrap text-purple-900 leading-relaxed font-medium">
@@ -617,7 +756,7 @@ export default function LetterModal({ letter, onClose }: Props) {
             <img
               src={letter.photoUrl}
               alt="letter photo"
-              className="max-w-full border-4 border-black shadow-xl mx-auto"
+              className="max-w-full max-h-60 border-4 border-black shadow-xl mx-auto"
               style={{ borderRadius: "15px" }}
             />
           </div>
