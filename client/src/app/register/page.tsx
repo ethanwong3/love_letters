@@ -78,7 +78,7 @@ export default function RegisterPage() {
     e.preventDefault();
     if (!validateFields()) return;
 
-    const res = await fetch("http://localhost:4000/auth/register", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URI}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, displayName, password }),
