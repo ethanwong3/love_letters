@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import type { User } from "@/types/user";
 
 type UserType = {
   id: string;
@@ -9,7 +10,7 @@ type UserType = {
 }
 
 type AuthContextType = {
-  user: any | null;
+  user: User | null;
   token: string | null;
   login: (token: string, user: UserType) => void;
   logout: () => void;
@@ -30,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = (newToken: string, newUser: any) => {
+  const login = (newToken: string, newUser: User) => {
     setToken(newToken);
     setUser(newUser);
     localStorage.setItem("token", newToken);

@@ -201,7 +201,7 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
             <div className="text-center py-12">
               <div className="text-6xl mb-4">😢</div>
               <p className={`text-xl font-bold mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                No friends found with "{query}"
+                No friends found with &quot;{query}&quot;
               </p>
               <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
                 Try a different search term or check the spelling

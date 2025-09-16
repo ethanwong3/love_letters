@@ -2,7 +2,7 @@ export async function apiFetch<T>(url: string, options: RequestInit = {}): Promi
   const token = localStorage.getItem("token");
 
   // If body is FormData, don't set Content-Type (browser will add boundary)
-  const isFormData = typeof (options as any).body !== "undefined" && (options as any).body instanceof FormData;
+  const isFormData = options.body instanceof FormData;
 
   const headers: Record<string, string> = {
     ...(isFormData ? {} : { "Content-Type": "application/json" }),

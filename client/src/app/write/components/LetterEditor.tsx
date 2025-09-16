@@ -31,8 +31,9 @@ interface SpotifyTrack {
 export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
   const { user } = useAuth();
   const [subject, setSubject] = useState("");
+  const name = user?.displayName;
   const [content, setContent] = useState(
-    `Dear ${recipient.displayName},\n\nWrite your message here.\n\nFrom,\n${user.displayName}`
+    `Dear ${recipient.displayName},\n\nWrite your message here.\n\nFrom,\n${name}`
   );
   const [songQuery, setSongQuery] = useState("");
   const [songResults, setSongResults] = useState<SpotifyTrack[]>([]);
@@ -239,7 +240,7 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
       });
       
       setUploadState({ status: 'completed', url, progress: 100 });
-    } catch (err: any) {
+    } catch (err: unknown) {
       // This should never happen now since we retry indefinitely
       // But keeping as fallback
       setUploadState({ 
@@ -318,7 +319,7 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
 
       // Create draft letter
       const draftBody = JSON.stringify({
-        authorId: user.id,
+        authorId: user?.id,
         recipientId: recipient.id,
         content,
         subject: subject || undefined,
@@ -378,9 +379,11 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
       }
         
       onComplete(true, message);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setIsSending(false);
-      setError(err.message || "Unexpected error occurred");
+      if (err instanceof Error) {
+        setError(err.message || "Unexpected error occurred");
+      }
     }
   }
 
@@ -424,7 +427,7 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
               ? 'bg-gradient-to-r from-yellow-800 to-pink-800 border-purple-500 text-purple-200'
               : 'bg-gradient-to-r from-yellow-100 to-pink-100 border-purple-300 text-purple-700'
           }`}>      
-            <p className="text-sm font-mono">From: {user.displayName}</p>            
+            <p className="text-sm font-mono">From: {user?.displayName}</p>            
             <p className="text-sm font-mono">To: {recipient.displayName}</p>
             <p className="text-sm font-mono">Time: {timestamp}</p>
           </div>
@@ -521,7 +524,7 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
                           <div className={`text-sm ${
                             isDarkMode ? 'text-green-400' : 'text-green-600'
                           }`}>
-                            {track.artists.map((a: any) => a.name).join(", ")}
+                            {track.artists.map((a: SpotifyArtist) => a.name).join(", ")}
                           </div>
                         </div>
                       </div>
@@ -546,7 +549,7 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
                       <div className={`text-sm ${
                         isDarkMode ? 'text-green-400' : 'text-green-600'
                       }`}>
-                        {selectedSong.artists.map((a: any) => a.name).join(", ")}
+                        {selectedSong.artists.map((a: SpotifyArtist) => a.name).join(", ")}
                       </div>
                     </div>
                   </div>
