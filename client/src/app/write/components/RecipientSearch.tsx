@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { apiFetch } from "@/lib/api";
 import type { User } from "@/types/user";
 import { useAuth } from "@/context/AuthContext";
+import Image from "next/image";
 
 interface Props {
   onSelect: (user: User) => void;
@@ -259,7 +260,8 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
             <div className="p-6">
               <div className="flex items-start gap-4 mb-6">
                 <div className="bg-green-100 border-2 border-green-400 rounded flex items-center justify-center flex-shrink-0">
-                  <img
+                  <Image
+                    alt="fuck you"
                     src='/kirby2.jpeg'
                     className="w-30 h-30 object-cover"
                   />

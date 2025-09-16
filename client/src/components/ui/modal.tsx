@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function Modal({ message, onClose }: { message: string; onClose: () => void }) {
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
@@ -26,7 +28,7 @@ export default function Modal({ message, onClose }: { message: string; onClose: 
         {/* Modal Content */}
         <div className="p-4 flex flex-col items-center gap-4">
           {/* Cat Image */}
-          <img
+          <Image
             src="/cat4.jpeg"
             alt="Cat"
             className="w-30 h-30 object-contain"
