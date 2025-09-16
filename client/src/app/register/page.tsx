@@ -78,6 +78,8 @@ export default function RegisterPage() {
     e.preventDefault();
     if (!validateFields()) return;
 
+    console.log('API URL:', process.env.NEXT_PUBLIC_API_URL); // Add this line
+
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
