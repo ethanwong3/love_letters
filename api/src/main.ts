@@ -9,7 +9,7 @@ async function bootstrap() {
 
   // allow requests from frontend 
   app.enableCors({
-    origin: ['http://localhost:3000'], // TODO: replace with vercel domain
+    origin: ['https://love-letters-1qpzdn4n5-ethanwong3s-projects.vercel.app/login'], // TODO: replace with vercel domain
     credentials: true,
   });
 
