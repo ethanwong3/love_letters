@@ -27,7 +27,7 @@ export default function LetterIcon({ letter, onClick }: Props) {
 
   return (
     <div
-      className="cursor-pointer hover:scale-110 transition-transform duration-200 p-2 bg-white/20 rounded-lg border border-white/30 backdrop-blur-sm"
+      className="cursor-pointer hover:scale-110 transition-transform duration-200 p-2"
       onClick={onClick}
     >
       {/* Letter Icon */}

@@ -32,6 +32,15 @@ export default function LetterModal({ letter, onClose }: Props) {
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [connectionAttempts, setConnectionAttempts] = useState(0);
   const maxConnectionAttempts = 3;
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem('isDarkMode') === 'true') {
+      setIsDarkMode(true);
+    } else {
+      setIsDarkMode(false);
+    }
+  }, []);
 
   // Timer for Spotify player position updates
   useEffect(() => {
@@ -570,7 +579,7 @@ export default function LetterModal({ letter, onClose }: Props) {
     <div className="fixed inset-0 bg-gradient-to-br from-purple-900/90 to-pink-900/90 flex items-center justify-center z-50 backdrop-blur-sm">
       <div
         ref={modalRef}
-        className="bg-gradient-to-br from-pink-100 to-purple-100 border-4 border-black p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl relative"
+        className="bg-gradient-to-br from-pink-100 to-purple-100 border-4 border-black p-8 max-w-5xl w-full mx-4 max-h-[90vh] overflow-hidden shadow-2xl relative"
         style={{
           borderRadius: "20px",
           boxShadow: "0 0 30px rgba(255, 20, 147, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.3)",
