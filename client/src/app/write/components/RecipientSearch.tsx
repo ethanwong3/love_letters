@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { apiFetch } from "@/lib/api";
 import type { User } from "@/types/user";
 import { useAuth } from "@/context/AuthContext";
@@ -14,10 +14,17 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isSearchTriggered, setIsSearchTriggered] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const darkMode = localStorage.getItem("isDarkMode") === "true";
+    setIsDarkMode(darkMode);
+  }, []);
 
   async function handleSearch() {
     if (!query.trim()) return;
-    
+    setIsSearchTriggered(true);
     setIsSearching(true);
     try {
       const users = await apiFetch<User[]>(`/user/search/${encodeURIComponent(query)}`);
@@ -40,10 +47,18 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
   function clearInput() {
     setQuery("");
     setResults([]);
+    setIsSearchTriggered(false);
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 dark:from-purple-900 dark:via-blue-900 dark:to-pink-900 p-6">
+    <div
+      className="min-h-screen p-6"
+      style={{
+        background: isDarkMode
+          ? "linear-gradient(135deg, #000000, #001122, #003366)"
+          : "linear-gradient(135deg, #ffffff, #e6f7ff, #b3d9ff)",
+      }}
+    >
       <div className="max-w-4xl mx-auto">
         {/* Success Message */}
         {successMessage && (
@@ -58,22 +73,19 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
 
         {/* Header */}
         <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl border-4 border-pink-400 dark:border-purple-400 p-6 mb-6 shadow-2xl">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent pixel-font">
-              💫 Choose Recipient 💫
-            </h1>
+          <div className="flex items-center justify-between">
+            {/* Back Button */}
             <button
               onClick={onBack}
               className="px-4 py-2 bg-gradient-to-r from-purple-400 to-pink-400 dark:from-purple-600 dark:to-pink-600 text-white rounded-2xl border-2 border-purple-600 dark:border-purple-400 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 font-bold"
             >
               ← Home
             </button>
-          </div>
-          
-          <div className="p-4 bg-gradient-to-r from-yellow-100 to-pink-100 dark:from-yellow-800 dark:to-pink-800 rounded-2xl border-2 border-dashed border-purple-300 dark:border-purple-500 text-center">
-            <p className="font-mono text-purple-700 dark:text-purple-200">
-              Search for friends to send love letters to ♡
-            </p>
+
+            {/* Heading */}
+            <h1 className="absolute left-1/2 transform -translate-x-1/2 text-5xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+              💫 Choose Recipient 💫
+            </h1>
           </div>
         </div>
 
@@ -84,9 +96,12 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
               <input
                 className="w-full border-3 border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-gray-700 px-6 py-4 pr-12 rounded-2xl focus:border-blue-500 focus:outline-none text-blue-800 dark:text-blue-200 placeholder-blue-500 dark:placeholder-blue-400 text-lg font-medium"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  setQuery(e.target.value)
+                  setIsSearchTriggered(false);
+                }}
                 onKeyDown={handleKeyDown}
-                placeholder="Search by display name... 🔍"
+                placeholder="Search by username..."
                 disabled={isSearching}
               />
               {query && (
@@ -107,7 +122,7 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
                   : "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 border-gray-400 cursor-not-allowed"
               }`}
             >
-              {isSearching ? "Searching... 🔄" : "Search ✨"}
+              {isSearching ? "Searching..." : "Search"}
             </button>
           </div>
 
@@ -123,7 +138,7 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
           {results.length > 0 && !isSearching && (
             <div className="space-y-3">
               <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 pixel-font mb-4">
-                Found {results.length} friend{results.length !== 1 ? 's' : ''} 👥
+                Found {results.length} user{results.length !== 1 ? 's' : ''} 👥
               </h3>
               {results.map((user) => (
                 <div
@@ -140,9 +155,6 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
                         {user.email}
                       </div>
                     </div>
-                    <div className="text-3xl group-hover:animate-bounce transition-all duration-300">
-                      💌
-                    </div>
                   </div>
                 </div>
               ))}
@@ -150,7 +162,7 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
           )}
 
           {/* No Results */}
-          {query && results.length === 0 && !isSearching && (
+          {results.length === 0 && isSearchTriggered && (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">😢</div>
               <p className="text-xl font-bold text-gray-600 dark:text-gray-300 mb-2">
@@ -167,10 +179,10 @@ export default function RecipientSearch({ onSelect, onBack, successMessage }: Pr
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🔍</div>
               <p className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-                Ready to find someone special?
+                Wanna write?
               </p>
               <p className="text-blue-500 dark:text-blue-300">
-                Type a name above to start searching for friends
+                Type a name above to start searching for your friends
               </p>
             </div>
           )}

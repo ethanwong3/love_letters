@@ -38,19 +38,57 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
   const [deliveryDate, setDeliveryDate] = useState("");
   const [deliveryTime, setDeliveryTime] = useState("");
 
-  // Keep track of ongoing uploads to update letters later
-  const uploadQueueRef = useRef<Map<string, { letterId: string; uploadPromise: Promise<string> }>>(new Map());
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [spotifyConnected, setSpotifyConnected] = useState(false);
+
+  useEffect(() => {
+    const darkMode = localStorage.getItem("isDarkMode") === "true";
+    setIsDarkMode(darkMode);
+  }, []);
+
+  useEffect(() => {
+    if (localStorage.getItem("spotifyAccessToken")) {
+      setSpotifyConnected(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.access_token) {
+        localStorage.setItem("spotifyAccessToken", event.data.access_token);
+        setSpotifyConnected(true);
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
 
   useEffect(() => {
     setTimestamp(new Date().toLocaleString());
   }, []);
 
-  useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => setError(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [error]);
+  const connectSpotify = () => {
+    const w = 500, h = 600;
+    const topWindow = window.top ?? window;
+    const y = topWindow.outerHeight / 2 + topWindow.screenY - h / 2;
+    const x = topWindow.outerWidth / 2 + topWindow.screenX - w / 2;
+    window.open(
+      `${process.env.NEXT_PUBLIC_API_URL}/spotify/login`,
+      "Spotify Login",
+      `width=${w},height=${h},top=${y},left=${x}`
+    );
+  };
+
+  const removeSelectedSong = () => {
+    setSelectedSong(null);
+    setSongResults([]);
+    setSongQuery("");
+  };
+
+  const removeImage = () => {
+    setPhoto(null);
+    setUploadState({ status: 'idle' });
+  };
 
   // Persistent Cloudinary upload with retry mechanism - will never give up!
   async function uploadPhotoToCloudinary(file: File, onProgress?: (progress: number) => void, retryCount = 0): Promise<string> {
@@ -220,11 +258,11 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
     const token = localStorage.getItem("spotifyAccessToken");
     
     if (!tokenjwt) {
-      setError("Your session has expired :(");
+      setError("Authentication expired. Please refresh the page.");
       return;
     }
     if (!token) {
-      setError("Please connect to Spotify first! ♪");
+      setError("Please connect to Spotify first.");
       return;
     }
     
@@ -245,7 +283,7 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
 
   async function handleSendLetter(scheduled: boolean = false) {
     if (!content.trim()) {
-      setError("have a heart, add some words to the letter ♡");
+      setError("Please add some content to your letter.");
       return;
     }
 
@@ -332,7 +370,7 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
       onComplete(true, message);
     } catch (err: any) {
       setIsSending(false);
-      setError(err.message || "Unexpected error occurred :(");
+      setError(err.message || "Unexpected error occurred");
     }
   }
 
@@ -341,84 +379,125 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 dark:from-purple-900 dark:via-blue-900 dark:to-pink-900 p-6">
+    <div
+      className="min-h-screen p-6"
+      style={{
+        background: isDarkMode
+          ? "linear-gradient(135deg, #000000, #001122, #003366)"
+          : "linear-gradient(135deg, #ffffff, #e6f7ff, #b3d9ff)",
+      }}
+    >
       <div className="max-w-4xl mx-auto">
         {/* Retro Header */}
         <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl border-4 border-pink-400 dark:border-purple-400 p-6 mb-6 shadow-2xl">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent pixel-font">
-              ✨ Write Letter ✨
-            </h1>
             <button
               onClick={onBack}
               className="px-4 py-2 bg-gradient-to-r from-purple-400 to-pink-400 dark:from-purple-600 dark:to-pink-600 text-white rounded-2xl border-2 border-purple-600 dark:border-purple-400 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 font-bold"
             >
               ← Back
             </button>
+            <h1 className="absolute left-1/2 transform -translate-x-1/2 text-5xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+              💫 Write a Letter 💫
+            </h1>
           </div>
-          
-          <div className="mt-4 p-3 bg-gradient-to-r from-yellow-100 to-pink-100 dark:from-yellow-800 dark:to-pink-800 rounded-2xl border-2 border-dashed border-purple-300 dark:border-purple-500">
+          <div className="mt-4 p-3 bg-gradient-to-r from-yellow-100 to-pink-100 dark:from-yellow-800 dark:to-pink-800 rounded-2xl border-2 border-dashed border-purple-300 dark:border-purple-500">      
             <p className="text-sm font-mono text-purple-700 dark:text-purple-200">
-              To: {recipient.displayName} ♡ | Time: {timestamp}
+              From: {user.displayName}
+            </p>            
+            <p className="text-sm font-mono text-purple-700 dark:text-purple-200">
+              To: {recipient.displayName}
+            </p>
+            <p className="text-sm font-mono text-purple-700 dark:text-purple-200">
+              Time: {timestamp}
             </p>
           </div>
         </div>
 
         <div className="grid gap-6">
-          {/* Song Search Section */}
+          {/* Spotify Section */}
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl border-4 border-green-400 dark:border-green-500 p-6 shadow-2xl">
-            <h3 className="text-xl font-bold text-green-600 dark:text-green-400 mb-4 pixel-font">🎵 Attach a Song</h3>
+            <h3 className="text-xl font-bold text-green-600 dark:text-green-400 mb-4 pixel-font">Attach a Song</h3>
             
-            <div className="flex gap-2 mb-4">
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  className="w-full border-2 border-green-300 dark:border-green-600 bg-green-50 dark:bg-gray-700 px-4 py-3 rounded-2xl focus:border-green-500 focus:outline-none text-green-800 dark:text-green-200 placeholder-green-500 dark:placeholder-green-400"
-                  value={songQuery}
-                  onChange={(e) => setSongQuery(e.target.value)}
-                  placeholder="Search Spotify for vibes... 🔍"
-                />
+            {!spotifyConnected ? (
+              <div className="text-center py-8">
+                <div className="mb-6">
+                  <div className="text-6xl mb-4">🎵</div>
+                  <p className="text-green-700 dark:text-green-300 mb-2 font-semibold">
+                    Connect to Spotify to add music to your letters
+                  </p>
+                  <p className="text-sm text-green-600 dark:text-green-400">
+                    dont be lazy its just a few clicks
+                  </p>
+                </div>
+                <button
+                  onClick={connectSpotify}
+                  className="px-8 py-4 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-2xl border-3 border-green-700 shadow-lg hover:from-green-500 hover:to-green-700 transition-all duration-200 font-bold text-lg transform hover:scale-105"
+                >
+                  🎧 Connect Spotify 🎧
+                </button>
               </div>
-              <button
-                onClick={handleSongSearch}
-                className="px-6 py-3 bg-gradient-to-r from-green-400 to-green-500 text-white rounded-2xl border-2 border-green-600 shadow-lg hover:from-green-500 hover:to-green-600 transition-all duration-200 font-bold transform hover:scale-105"
-              >
-                Search ♪
-              </button>
-            </div>
-
-            {songResults.length > 0 && (
-              <div className="border-2 border-green-300 dark:border-green-600 rounded-2xl p-4 max-h-64 overflow-y-auto bg-green-50 dark:bg-gray-700">
-                {songResults.map((track) => (
-                  <div
-                    key={track.id}
-                    onClick={() => setSelectedSong(track)}
-                    className={`flex items-center gap-3 p-3 cursor-pointer rounded-2xl transition-all duration-200 ${
-                      selectedSong?.id === track.id
-                        ? "bg-gradient-to-r from-green-200 to-green-300 dark:from-green-600 dark:to-green-700 border-2 border-green-500"
-                        : "hover:bg-green-100 dark:hover:bg-gray-600 border-2 border-transparent"
-                    }`}
+            ) : !selectedSong ? (
+              // Song search interface
+              <>
+                <div className="flex gap-2 mb-4">
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      className="w-full border-2 border-green-300 dark:border-green-600 bg-green-50 dark:bg-gray-700 px-4 py-3 rounded-2xl focus:border-green-500 focus:outline-none text-green-800 dark:text-green-200 placeholder-green-500 dark:placeholder-green-400"
+                      value={songQuery}
+                      onChange={(e) => setSongQuery(e.target.value)}
+                      placeholder="Search Spotify for vibes..."
+                      onKeyPress={(e) => e.key === 'Enter' && handleSongSearch()}
+                    />
+                  </div>
+                  <button
+                    onClick={handleSongSearch}
+                    className="px-6 py-3 bg-gradient-to-r from-green-400 to-green-500 text-white rounded-2xl border-2 border-green-600 shadow-lg hover:from-green-500 hover:to-green-600 transition-all duration-200 font-bold transform hover:scale-105"
                   >
-                    <img src={track.album.images[2]?.url} alt={track.name} className="w-12 h-12 rounded-lg" />
+                    Search
+                  </button>
+                </div>
+
+                {songResults.length > 0 && (
+                  <div className="border-2 border-green-300 dark:border-green-600 rounded-2xl p-4 max-h-64 overflow-y-auto bg-green-50 dark:bg-gray-700">
+                    {songResults.map((track) => (
+                      <div
+                        key={track.id}
+                        onClick={() => setSelectedSong(track)}
+                        className="flex items-center gap-3 p-3 cursor-pointer rounded-2xl transition-all duration-200 hover:bg-green-100 dark:hover:bg-gray-600 border-2 border-transparent hover:border-green-400"
+                      >
+                        <img src={track.album.images[2]?.url} alt={track.name} className="w-12 h-12 rounded-lg" />
+                        <div>
+                          <div className="font-bold text-green-800 dark:text-green-200">{track.name}</div>
+                          <div className="text-sm text-green-600 dark:text-green-400">
+                            {track.artists.map((a: any) => a.name).join(", ")}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              // Selected song display
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-100 to-green-200 dark:from-green-800 dark:to-green-900 rounded-2xl border-2 border-green-400 dark:border-green-500">
+                  <div className="flex items-center gap-3">
+                    <img src={selectedSong.album.images[1]?.url} alt="album" className="w-16 h-16 rounded-lg border-2 border-green-300" />
                     <div>
-                      <div className="font-bold text-green-800 dark:text-green-200">{track.name}</div>
+                      <div className="font-bold text-green-800 dark:text-green-200">{selectedSong.name}</div>
                       <div className="text-sm text-green-600 dark:text-green-400">
-                        {track.artists.map((a: any) => a.name).join(", ")}
+                        {selectedSong.artists.map((a: any) => a.name).join(", ")}
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-
-            {selectedSong && (
-              <div className="mt-4 flex items-center gap-3 border-2 border-green-400 dark:border-green-500 p-4 bg-gradient-to-r from-green-100 to-green-200 dark:from-green-800 dark:to-green-900 rounded-2xl">
-                <img src={selectedSong.album.images[1]?.url} alt="album" className="w-16 h-16 rounded-lg border-2 border-green-300" />
-                <div>
-                  <div className="font-bold text-green-800 dark:text-green-200">{selectedSong.name}</div>
-                  <div className="text-sm text-green-600 dark:text-green-400">
-                    {selectedSong.artists.map((a: any) => a.name).join(", ")}
-                  </div>
+                  <button
+                    onClick={removeSelectedSong}
+                    className="px-4 py-2 bg-red-400 hover:bg-red-500 text-white rounded-xl border-2 border-red-600 shadow-md transition-all duration-200 font-bold"
+                  >
+                    Remove
+                  </button>
                 </div>
               </div>
             )}
@@ -426,17 +505,17 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
 
           {/* Subject & Content */}
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl border-4 border-purple-400 dark:border-purple-500 p-6 shadow-2xl">
-            <h3 className="text-xl font-bold text-purple-600 dark:text-purple-400 mb-4 pixel-font">💌 Letter Content</h3>
+            <h3 className="text-xl font-bold text-purple-600 dark:text-purple-400 mb-4 pixel-font">Letter Content</h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block font-bold text-purple-700 dark:text-purple-300 mb-2">Subject (optional)</label>
+                <label className="block font-bold text-purple-700 dark:text-purple-300 mb-2">Subject</label>
                 <input
                   type="text"
                   className="w-full border-2 border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-gray-700 px-4 py-3 rounded-2xl focus:border-purple-500 focus:outline-none text-purple-800 dark:text-purple-200 placeholder-purple-500"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  placeholder="Add a dreamy subject ✨"
+                  placeholder="Add a dreamy subject"
                 />
               </div>
 
@@ -455,25 +534,23 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
 
           {/* Photo Upload with Progress */}
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl border-4 border-pink-400 dark:border-pink-500 p-6 shadow-2xl">
-            <h3 className="text-xl font-bold text-pink-600 dark:text-pink-400 mb-4 pixel-font">📸 Attach Photo</h3>
+            <h3 className="text-xl font-bold text-pink-600 dark:text-pink-400 mb-4 pixel-font">Attach Photo</h3>
             
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0] || null;
-                setPhoto(file);
-                if (file) {
-                  setUploadState({ status: 'idle' });
-                }
-              }}
-              className="block w-full text-sm text-pink-600 dark:text-pink-400 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-2 file:border-pink-300 file:text-sm file:font-bold file:bg-gradient-to-r file:from-pink-100 file:to-pink-200 file:text-pink-700 hover:file:from-pink-200 hover:file:to-pink-300 dark:file:from-pink-800 dark:file:to-pink-900 dark:file:text-pink-200 dark:file:border-pink-600"
-            />
-            
-            {photo && (
-              <div className="mt-4 space-y-3">
-                <p className="text-sm font-bold text-pink-600 dark:text-pink-400">📁 {photo.name}</p>
-                
+            {!photo ? (
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  setPhoto(file);
+                  if (file) {
+                    setUploadState({ status: 'idle' });
+                  }
+                }}
+                className="block w-full text-sm text-pink-600 dark:text-pink-400 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-2 file:border-pink-300 file:text-sm file:font-bold file:bg-gradient-to-r file:from-pink-100 file:to-pink-200 file:text-pink-700 hover:file:from-pink-200 hover:file:to-pink-300 dark:file:from-pink-800 dark:file:to-pink-900 dark:file:text-pink-200 dark:file:border-pink-600"
+              />
+            ) : (
+              <div className="space-y-4">
                 {/* Upload Status - Always Shows Progress */}
                 {uploadState.status === 'uploading' && (
                   <div className="bg-pink-50 dark:bg-gray-700 rounded-2xl p-4 border-2 border-pink-300 dark:border-pink-600">
@@ -504,8 +581,14 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
                   <img
                     src={URL.createObjectURL(photo)}
                     alt="Preview"
-                    className="max-w-full h-auto rounded-lg border-2 border-pink-400"
+                    className="max-w-full h-auto rounded-lg border-2 border-pink-400 mb-4"
                   />
+                  <button
+                    onClick={removeImage}
+                    className="w-full px-4 py-2 bg-red-400 hover:bg-red-500 text-white rounded-xl border-2 border-red-600 shadow-md transition-all duration-200 font-bold"
+                  >
+                    Remove Image
+                  </button>
                 </div>
               </div>
             )}
@@ -513,7 +596,7 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
 
           {/* Send Options */}
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl border-4 border-blue-400 dark:border-blue-500 p-6 shadow-2xl">
-            <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-4 pixel-font">✉️ Send Options</h3>
+            <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-4 pixel-font">Send Options</h3>
             
             {/* Info about background upload */}
             {photo && uploadState.status === 'uploading' && (
@@ -533,7 +616,7 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
                     : "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600"
                 }`}
               >
-                Send Now ⚡
+                Send Now
               </button>
               <button
                 onClick={() => setShowSchedule(true)}
@@ -543,7 +626,7 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
                     : "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600"
                 }`}
               >
-                Schedule ⏰
+                Schedule
               </button>
             </div>
 
@@ -580,20 +663,68 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
                   : "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed border-4 border-gray-400"
               }`}
             >
-              {showSchedule ? "📅 Schedule Letter ✨" : "🚀 Send Letter Now! ♡"}
+              {showSchedule ? "📅 Schedule Letter 📅" : "🚀 Send Letter Now! 🚀"}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Error Notification */}
+      {/* Microsoft-style System Error Popup */}
       {error && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-red-400 to-pink-400 text-white px-6 py-4 rounded-full shadow-2xl font-bold text-sm border-4 border-red-300 z-50 animate-bounce">
-          <div className="flex items-center justify-between">
-            <p>❌ {error}</p>
-            <button onClick={() => setError(null)} className="ml-4 hover:scale-110 transition-transform">
-              ✕
-            </button>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div 
+            className="bg-gray-200 border-2 border-gray-800 shadow-2xl pixel-font"
+            style={{
+              width: '400px',
+              boxShadow: 'inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf, inset -2px -2px #808080, inset 2px 2px #c0c0c0'
+            }}
+          >
+            {/* Title Bar */}
+            <div 
+              className="bg-gradient-to-r from-blue-800 to-blue-600 text-white px-2 py-1 flex items-center justify-between text-sm font-bold"
+              style={{
+                background: 'linear-gradient(90deg, #000080 0%, #000060 100%)'
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-red-500 border border-red-700 flex items-center justify-center text-xs">×</div>
+                <span>System Error</span>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="w-4 h-4 bg-gray-300 border border-gray-600 flex items-center justify-center text-black text-xs hover:bg-gray-400"
+                style={{
+                  boxShadow: 'inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* Content */}
+            <div className="p-4">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="text-red-600 text-2xl">⚠️</div>
+                <div>
+                  <div className="font-bold text-gray-800 mb-2">An error has occurred:</div>
+                  <div className="text-gray-700 text-sm bg-white border-2 border-gray-400 p-2 font-mono">
+                    {error}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-center">
+                <button
+                  onClick={() => setError(null)}
+                  className="px-8 py-2 bg-gray-300 border-2 border-gray-600 text-gray-800 font-bold text-sm hover:bg-gray-400"
+                  style={{
+                    boxShadow: 'inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf, inset -2px -2px #808080, inset 2px 2px #c0c0c0'
+                  }}
+                >
+                  OK
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
