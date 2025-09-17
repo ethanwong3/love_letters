@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import PixelStars from "../../components/ui/pixelStars";
 import Modal from "../../components/ui/modal";
+import LoadingOverlay from "../../components/ui/loading";
+import { set } from "react-hook-form";
 
 export default function RegisterPage() {
   const { login } = useAuth();
@@ -15,6 +17,7 @@ export default function RegisterPage() {
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [errors, setErrors] = useState({email: "", displayName: "", password: "", passwordConfirm: ""});
   const [modalMessage, setModalMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const closeModal = () => setModalMessage("");
 
@@ -77,27 +80,36 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateFields()) return;
-
+    setLoading(true);
     console.log('API URL:', process.env.NEXT_PUBLIC_API_URL); // Add this line
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, displayName, password }),
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-      login(data.token, data.user);
-      router.push("/");
-    } else {
-      //alert(data.message || "Registration failed");
-      setModalMessage(data.message || "Registration failed");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, displayName, password }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        login(data.token, data.user);
+        router.push("/");
+      } else {
+        //alert(data.message || "Registration failed");
+        setModalMessage(data.message || "Registration failed");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      setModalMessage("An unexpected error occurred. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div>
+      {loading && (
+        <LoadingOverlay imageSrc="/cat2.jpeg" message="Summoning the server spirits..." />
+      )}
       {modalMessage && <Modal message={modalMessage} onClose={closeModal} />}
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#B3D9F7] via-[#F3CFE6] to-[#F8B7D4] relative overflow-hidden">
         <PixelStars color="white" />

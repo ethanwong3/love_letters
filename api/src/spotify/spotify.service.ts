@@ -40,23 +40,40 @@ export class SpotifyService {
   }
 
   async exchangeCodeForToken(code: string): Promise<any> {
+    console.log('🔄 exchangeCodeForToken called with code:', code ? 'received' : 'MISSING');
+    console.log('🔧 Environment check:');
+    console.log('  - CLIENT_ID exists:', !!this.CLIENT_ID);
+    console.log('  - CLIENT_SECRET exists:', !!this.CLIENT_SECRET);
+    console.log('  - REDIRECT_URI:', this.REDIRECT_URI);
+
+    if (!code) {
+      throw new Error('Authorization code is required');
+    }
+
     const url = 'https://accounts.spotify.com/api/token';
     const body = new URLSearchParams({
       grant_type: 'authorization_code',
-      code,
-      redirect_uri: this.REDIRECT_URI || '', // Provide a default value
+      code: code,  // Make sure code is properly passed
+      redirect_uri: this.REDIRECT_URI || '',
     });
+
+    console.log('📤 Request body:', body.toString());
 
     const headers = {
       Authorization: `Basic ${Buffer.from(`${this.CLIENT_ID}:${this.CLIENT_SECRET}`).toString('base64')}`,
       'Content-Type': 'application/x-www-form-urlencoded',
     };
 
-    const response = await firstValueFrom(
-      this.httpService.post(url, body.toString(), { headers }),
-    );
-
-    return response.data;
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(url, body.toString(), { headers }),
+      );
+      console.log('✅ Token exchange successful');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Token exchange failed:', error.response?.data || error.message);
+      throw error;
+    }
   }
 
   async refreshToken(refreshToken: string): Promise<any> {

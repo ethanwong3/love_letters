@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import PixelStars from "../../components/ui/pixelStars";
 import Modal from "../../components/ui/modal";
+import LoadingOverlay from "../../components/ui/loading";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({email: "", password: ""});
   const [modalMessage, setModalMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const closeModal = () => setModalMessage("");
 
@@ -66,6 +68,8 @@ export default function LoginPage() {
       setModalMessage('Configuration error: API URL not set. Check environment variables.');
       return;
     }
+
+    setLoading(true);
 
     try {
       console.log('📤 Making fetch request...');
@@ -141,11 +145,16 @@ export default function LoginPage() {
       } else {
         setModalMessage(`Connection error: ${(fetchError as Error).message}`);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="relative">
+      {loading && (
+        <LoadingOverlay imageSrc="/cat2.jpeg" message="Summoning the server spirits..." />
+      )}
       {modalMessage && <Modal message={modalMessage} onClose={closeModal} />}
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F8B7D4] via-[#F3CFE6] to-[#A28CC5] relative overflow-hidden">
         <PixelStars color="black" />
