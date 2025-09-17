@@ -20,13 +20,20 @@ async function bootstrap() {
       const httpAdapter = app.getHttpAdapter();
       if (httpAdapter.getHttpServer && typeof httpAdapter.getHttpServer === 'function') {
         const server = httpAdapter.getHttpServer();
-        const router = server._router; // Access the router directly from the Express server
-        console.log('Registered routes:', router.stack.map(r => r.route?.path) || 'Unable to get routes');
+        if (server._router && Array.isArray(server._router.stack)) {
+          // Safely access the router stack
+          const routes = server._router.stack
+            .filter((r: any) => r.route) // Filter out non-route items
+            .map((r: any) => r.route.path); // Get the route paths
+          console.log('Registered routes:', routes.length ? routes : 'No routes registered');
+        } else {
+          console.log('Unable to access router stack. Ensure the server is using Express.');
+        }
+      } else {
+        console.log('Unable to get HTTP server. Ensure the HTTP adapter is properly configured.');
       }
-      const routes = app.getHttpAdapter().getHttpServer()._router.stack
-        .filter((r: any) => r.route) // Filter out non-route items
-        .map((r: any) => r.route.path); // Get the route paths
-      console.log('Registered routes:', routes.length ? routes : 'Unable to get routes');
+    } else {
+      console.log('Unable to get HTTP adapter. Ensure the application is properly initialized.');
     }
 
     console.log('🌐 Configuring CORS...');
