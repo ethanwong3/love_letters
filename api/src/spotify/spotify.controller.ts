@@ -82,7 +82,7 @@ export class SpotifyController {
     return {};
   }
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Get('search')
   async searchSongs(
     @Query('query') query: string, 
@@ -115,7 +115,7 @@ export class SpotifyController {
     return {};
   }
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Get('song')
   async getSongMetadata(
     @Query('id') id: string, 
@@ -140,5 +140,11 @@ export class SpotifyController {
       this.logger.error(`Error getting song metadata: ${error.message}`, error.stack);
       throw new Error('Failed to get song metadata from Spotify');
     }
+  }
+
+  @Get('test')
+  test() {
+    console.log('TEST ENDPOINT HIT');
+    return { message: 'Spotify controller is working', timestamp: new Date().toISOString() };
   }
 }
