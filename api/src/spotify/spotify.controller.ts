@@ -77,8 +77,12 @@ export class SpotifyController {
     }
   }
 
-  // @UseGuards(JwtAuthGuard)
   @Options('search')
+  searchOptions() {
+    return {};
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('search')
   async searchSongs(
     @Query('query') query: string, 
@@ -106,8 +110,12 @@ export class SpotifyController {
     }
   }
 
-  @UseGuards(JwtAuthGuard)
   @Options('song')  
+  songOptions() {
+    return {};
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('song')
   async getSongMetadata(
     @Query('id') id: string, 
