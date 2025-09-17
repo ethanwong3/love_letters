@@ -52,10 +52,24 @@ export class SpotifyController {
 
     try {
       const tokenData = await this.spotifyService.exchangeCodeForToken(code);
+      console.log("Token exchange successful, sending to frontend:", {
+        hasAccessToken: !!tokenData.access_token,
+        tokenType: tokenData.token_type,
+        expiresIn: tokenData.expires_in,
+        hasRefreshToken: !!tokenData.refresh_token
+      });
+      
+      // Make sure we're sending the access_token field (not accessToken)
       res.send(`
         <script>
           if (window.opener) {
-            window.opener.postMessage(${JSON.stringify(tokenData)}, "*");
+            window.opener.postMessage({
+              access_token: "${tokenData.access_token}",
+              token_type: "${tokenData.token_type || 'Bearer'}",
+              expires_in: ${tokenData.expires_in || 3600},
+              refresh_token: "${tokenData.refresh_token || ''}",
+              scope: "${tokenData.scope || ''}"
+            }, "*");
             window.close();
           } else {
             document.body.innerText = "Success! You can close this tab.";
@@ -67,7 +81,7 @@ export class SpotifyController {
       res.send(`
         <script>
           if (window.opener) {
-            window.opener.postMessage({ error: "Token exchange failed" }, "*");
+            window.opener.postMessage({ error: "Token exchange failed: ${error.message}" }, "*");
             window.close();
           } else {
             document.body.innerText = "Token exchange failed. Please try again.";

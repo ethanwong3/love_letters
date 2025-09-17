@@ -47,6 +47,7 @@ interface SpotifyPlayer {
   setVolume: (volume: number) => Promise<void>;
   getCurrentState: () => Promise<SpotifyPlayerState | null>;
   addListener: (event: string, callback: (data: SpotifyEventData) => void) => void;
+  removeListener: (event: string, callback?: (data: SpotifyEventData) => void) => void;
 }
 
 interface SpotifyPlayerState {
@@ -77,6 +78,7 @@ declare global {
         volume: number;
       }) => SpotifyPlayer;
     };
+    spotifyPlayerInstance?: SpotifyPlayer;
   }
 }
 
@@ -95,8 +97,7 @@ export default function LetterModal({ letter, onClose }: Props) {
   const [playerReady, setPlayerReady] = useState(false);
   const [hasPremium, setHasPremium] = useState<boolean | null>(null);
   const [sdkLoaded, setSdkLoaded] = useState(false);
-  const [connectionAttempts, setConnectionAttempts] = useState(0);
-  const maxConnectionAttempts = 3;
+  const [isInitializing, setIsInitializing] = useState(false);
 
   // Timer for Spotify player position updates
   useEffect(() => {
@@ -137,11 +138,10 @@ export default function LetterModal({ letter, onClose }: Props) {
       currentAudio.src = "";
     }
     
-    // Stop Spotify player
+    // Stop Spotify player but don't disconnect (reuse it)
     if (player) {
       try {
         await player.pause();
-        player.disconnect();
       } catch (error) {
         console.error("Error stopping Spotify player:", error);
       }
@@ -176,7 +176,6 @@ export default function LetterModal({ letter, onClose }: Props) {
         
         if (player) {
           player.pause().catch(console.error);
-          player.disconnect();
         }
         
         setIsPlaying(false);
@@ -201,12 +200,13 @@ export default function LetterModal({ letter, onClose }: Props) {
       
       if (player) {
         player.pause().catch(console.error);
-        player.disconnect();
       }
     };
   }, [player]);
 
   const checkPremiumAndInitialize = useCallback(async () => {
+    if (isInitializing) return;
+    
     const spotifyToken = localStorage.getItem("spotifyAccessToken");
     
     if (!spotifyToken) {
@@ -238,11 +238,24 @@ export default function LetterModal({ letter, onClose }: Props) {
       setHasPremium(false);
       setError("Failed to verify Spotify premium status. Using preview mode.");
     }
-  }, []);
+  }, [isInitializing]);
 
   const initializePlayer = useCallback(async () => {
+    if (isInitializing) return;
+    setIsInitializing(true);
+
+    // Check if we already have a global player instance
+    if (window.spotifyPlayerInstance) {
+      console.log('Using existing Spotify player instance');
+      setPlayer(window.spotifyPlayerInstance);
+      setPlayerReady(true);
+      setIsInitializing(false);
+      return;
+    }
+
     if (!window.Spotify || !window.Spotify.Player) {
       setError("Spotify Web Playback SDK not available");
+      setIsInitializing(false);
       return;
     }
 
@@ -250,37 +263,49 @@ export default function LetterModal({ letter, onClose }: Props) {
     
     if (!spotifyToken) {
       setError("Spotify access token not found");
+      setIsInitializing(false);
       return;
     }
 
     try {
       const spotifyPlayer = new window.Spotify.Player({
-        name: `Love Letter Player ${Date.now()}`,
+        name: `Love Letter Player`,
         getOAuthToken: (cb: (token: string) => void) => {
-          cb(spotifyToken);
+          const currentToken = localStorage.getItem("spotifyAccessToken");
+          if (currentToken) {
+            cb(currentToken);
+          }
         },
         volume: volume
       });
 
+      // Store globally to prevent multiple instances
+      window.spotifyPlayerInstance = spotifyPlayer;
+
       spotifyPlayer.addListener('initialization_error', ({ message }: SpotifyEventData) => {
         console.error('Initialization error:', message);
         setError(`Failed to initialize: ${message}`);
-        setConnectionAttempts(prev => prev + 1);
+        setIsInitializing(false);
       });
 
       spotifyPlayer.addListener('authentication_error', ({ message }: SpotifyEventData) => {
         console.error('Authentication error:', message);
         setError('Authentication failed. Please reconnect to Spotify.');
+        setIsInitializing(false);
       });
 
       spotifyPlayer.addListener('account_error', ({ message }: SpotifyEventData) => {
         console.error('Account error:', message);
         setError(`Account error: ${message}`);
+        setIsInitializing(false);
       });
 
       spotifyPlayer.addListener('playback_error', ({ message }: SpotifyEventData) => {
         console.error('Playback error:', message);
-        setError(`Playback failed: ${message}`);
+        // Don't set error for "no list loaded" - this is expected initially
+        if (!message?.includes('no list was loaded')) {
+          setError(`Playback failed: ${message}`);
+        }
       });
 
       // Fixed player state listener
@@ -313,6 +338,7 @@ export default function LetterModal({ letter, onClose }: Props) {
         setDeviceId(device_id || "");
         setPlayerReady(true);
         setError(null);
+        setIsInitializing(false);
       });
 
       spotifyPlayer.addListener('not_ready', ({ device_id }: SpotifyEventData) => {
@@ -324,7 +350,7 @@ export default function LetterModal({ letter, onClose }: Props) {
         return Promise.race([
           spotifyPlayer.connect(),
           new Promise<never>((_, reject) => 
-            setTimeout(() => reject(new Error('Connection timeout')), 15000) // Increased timeout
+            setTimeout(() => reject(new Error('Connection timeout')), 10000)
           )
         ]);
       };
@@ -340,32 +366,23 @@ export default function LetterModal({ letter, onClose }: Props) {
         }
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        // Handle timeout more gracefully
         if (errorMessage === 'Connection timeout') {
           console.warn('Spotify connection timed out, falling back to preview mode');
           setHasPremium(false);
-          // setError('Spotify connection timed out. Using preview mode instead.');
-          return; // Exit early instead of retrying
+          setIsInitializing(false);
+          return;
         }
-        throw error; // Re-throw other errors
+        throw error;
       }
 
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Error initializing player:', error);
-      setConnectionAttempts(prev => prev + 1);
-      
-      if (connectionAttempts < maxConnectionAttempts) {
-        setError(`Connection attempt ${connectionAttempts + 1}/${maxConnectionAttempts} failed. Retrying...`);
-        setTimeout(() => {
-          initializePlayer();
-        }, 2000);
-      } else {
-        setError('Failed to connect to Spotify after multiple attempts. Using preview mode.');
-        setHasPremium(false);
-      }
+      setError('Failed to connect to Spotify. Using preview mode.');
+      setHasPremium(false);
+      setIsInitializing(false);
     }
-  }, [connectionAttempts, volume]);
+  }, [volume, isInitializing]);
 
   const loadSpotifySDK = useCallback(() => {
     const existingScript = document.querySelector('script[src="https://sdk.scdn.co/spotify-player.js"]');
@@ -408,11 +425,9 @@ export default function LetterModal({ letter, onClose }: Props) {
     }
 
     return () => {
-      if (player) {
-        player.disconnect();
-      }
+      // Don't disconnect on unmount - keep player alive for reuse
     };
-  }, [checkPremiumAndInitialize, loadSpotifySDK, player]);
+  }, [checkPremiumAndInitialize, loadSpotifySDK]);
 
   // Fetch track info
   useEffect(() => {
@@ -523,6 +538,23 @@ export default function LetterModal({ letter, onClose }: Props) {
     const spotifyToken = localStorage.getItem("spotifyAccessToken");
     
     try {
+      // First, ensure the device is active
+      await fetch(`https://api.spotify.com/v1/me/player`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          device_ids: [deviceId],
+          play: false
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${spotifyToken}`
+        },
+      });
+
+      // Small delay to ensure device transfer
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Now play the track
       const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
         method: 'PUT',
         body: JSON.stringify({
@@ -542,7 +574,7 @@ export default function LetterModal({ letter, onClose }: Props) {
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Error playing track:', error);
-      setError('Failed to play track. Make sure this device is selected in your Spotify app.');
+      setError('Failed to play track. Try selecting this device in your Spotify app first.');
     }
   };
 
@@ -628,12 +660,13 @@ export default function LetterModal({ letter, onClose }: Props) {
     if (hasPremium === null) return "Checking Spotify premium status...";
     if (!hasPremium) return "Playing 30-second preview (Spotify Premium required for full songs)";
     if (!sdkLoaded) return "Loading Spotify Web Playback SDK...";
+    if (isInitializing) return "Initializing Spotify player...";
     if (!playerReady) return "Connecting to Spotify player...";
     return "Ready to play full songs!";
   };
 
   const getPlayerStatusColor = () => {
-    if (hasPremium === null || !sdkLoaded || (hasPremium && !playerReady)) return "bg-blue-100 border-blue-400 text-blue-800";
+    if (hasPremium === null || !sdkLoaded || isInitializing || (hasPremium && !playerReady)) return "bg-blue-100 border-blue-400 text-blue-800";
     if (!hasPremium) return "bg-yellow-100 border-yellow-400 text-yellow-800";
     return "bg-green-100 border-green-400 text-green-800";
   };
@@ -694,13 +727,13 @@ export default function LetterModal({ letter, onClose }: Props) {
 
                     <div className="flex items-center space-x-2 mb-2">
                       <div className="relative">
-                        <Image
+                        <img
                           src={trackInfo.album.images[1]?.url || trackInfo.album.images[0]?.url}
                           alt="album cover"
                           width={80}
                           height={80}
-                          className="border-3 border-black shadow-lg"
-                          style={{ borderRadius: "10px" }}
+                          className="border-3 border-black shadow-lg object-cover"
+                          style={{ borderRadius: "10px", width: "80px", height: "80px" }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20" style={{ borderRadius: "10px" }}></div>
                       </div>
@@ -740,7 +773,7 @@ export default function LetterModal({ letter, onClose }: Props) {
                           
                           <button
                             onClick={togglePlay}
-                            disabled={!!(hasPremium && !playerReady)}
+                            disabled={!!(hasPremium && (!playerReady || isInitializing))}
                             className="w-15 h-15 bg-pink-500 hover:bg-pink-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white border-3 border-black shadow-xl transition-all hover:scale-110"
                             style={{ borderRadius: "50%" }}
                           >
@@ -763,7 +796,7 @@ export default function LetterModal({ letter, onClose }: Props) {
                             max={duration || 0}
                             value={currentTime}
                             onChange={handleSeek}
-                            disabled={!!(hasPremium && !playerReady)}
+                            disabled={!!(hasPremium && (!playerReady || isInitializing))}
                             className="w-full h-3 bg-gradient-to-r from-pink-300 to-purple-300 rounded-lg appearance-none cursor-pointer border-2 border-black disabled:opacity-50"
                             style={{
                               background: `linear-gradient(to right, #ec4899 0%, #ec4899 ${(currentTime / (duration || 1)) * 100}%, #d8b4fe ${(currentTime / (duration || 1)) * 100}%, #d8b4fe 100%)`
