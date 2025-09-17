@@ -283,7 +283,7 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
         { 
           headers: { 
             Authorization: `Bearer ${tokenjwt}`, 
-            "Spotify-Access-Token": token  // Make sure this matches your controller header name
+            "spotify-access-token": token  // Make sure this matches your controller header name
           } 
         }
       );
