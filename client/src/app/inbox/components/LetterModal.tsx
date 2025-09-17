@@ -675,22 +675,22 @@ export default function LetterModal({ letter, onClose }: Props) {
     <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm">
       <div
         ref={modalRef}
-        className="bg-white border-10 border-black p-4 max-w-5xl w-full mx-4 max-h-[90vh] h-full overflow-hidden shadow-2xl relative flex flex-col"
+        className="bg-white border-10 border-black p-6 max-w-7xl w-[95%] max-h-[95vh] h-[95vh] overflow-hidden shadow-2xl relative flex flex-col"
       >
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 z-10 w-10 h-10 bg-red-500 hover:bg-red-600 text-white font-bold text-xl border-2 border-black shadow-lg transition-all hover:scale-110"
+          className="absolute top-6 right-6 z-10 w-12 h-12 bg-red-500 hover:bg-red-600 text-white font-bold text-2xl border-2 border-black shadow-lg transition-all hover:scale-110"
           style={{ borderRadius: "50%" }}
         >
           ×
         </button>
 
         {/* Top Row - Subject and Writing Time */}
-        <div className="flex-shrink-0 mb-4">
-          <p className="mb-2">
+        <div className="flex-shrink-0 mb-6">
+          <p className="mb-3 text-lg font-semibold">
             Subject: {letter.subject || "No subject"}
           </p>
-          <p>
+          <p className="text-lg font-semibold">
             Writing Time: {new Date(letter.createdAt).toLocaleString()} → {letter.finishedAt
               ? new Date(letter.finishedAt).toLocaleString()
               : "Not finished"}
@@ -698,11 +698,11 @@ export default function LetterModal({ letter, onClose }: Props) {
         </div>
 
         {/* Middle Row - Music Player and Photo */}
-        <div className="flex-shrink-0 mb-4">
-          <div className="flex gap-4 items-start">
+        <div className="flex-shrink-0 mb-6">
+          <div className="flex gap-6 items-start h-[400px]">
             {/* Music Player */}
             {letter.songUrl && (
-              <div className="flex-1">
+              <div className="flex-1 h-full">
                 {loading && (
                   <div className="text-center py-8">
                     <div className="animate-spin text-4xl">🎵</div>
@@ -718,35 +718,33 @@ export default function LetterModal({ letter, onClose }: Props) {
 
                 {trackInfo && !loading && (
                   <div 
-                    className="bg-gradient-to-r from-cyan-200 to-pink-200 border-4 border-black p-2 shadow-lg relative overflow-hidden"
+                    className="bg-gradient-to-r from-cyan-200 to-pink-200 border-4 border-black p-4 shadow-lg relative overflow-hidden h-full flex flex-col"
                     style={{ borderRadius: "15px" }}
                   >
-                    <div className={`${getPlayerStatusColor()} border-2 p-2 rounded-lg text-xs mb-2`}>
+                    <div className={`${getPlayerStatusColor()} border-2 p-3 rounded-lg text-sm mb-4 flex-shrink-0`}>
                       🎵 {getPlayerStatus()}
                     </div>
 
-                    <div className="flex items-center space-x-2 mb-2">
+                    <div className="flex items-center space-x-4 mb-4 flex-shrink-0">
                       <div className="relative">
                         <img
                           src={trackInfo.album.images[1]?.url || trackInfo.album.images[0]?.url}
                           alt="album cover"
-                          width={80}
-                          height={80}
                           className="border-3 border-black shadow-lg object-cover"
-                          style={{ borderRadius: "10px", width: "80px", height: "80px" }}
+                          style={{ borderRadius: "10px", width: "100px", height: "100px" }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20" style={{ borderRadius: "10px" }}></div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-black text-lg text-purple-800 mb-1 drop-shadow truncate">
+                        <div className="font-black text-xl text-purple-800 mb-2 drop-shadow">
                           🎵 {trackInfo.name}
                         </div>
-                        <div className="text-sm text-purple-600 font-semibold truncate overflow-hidden">
+                        <div className="text-base text-purple-600 font-semibold">
                           👤 {trackInfo.artists
-                            .slice(0, 2) // Limit to the first 2 artists
+                            .slice(0, 2)
                             .map((a) => a.name)
                             .join(", ")}
-                          {trackInfo.artists.length > 2 && " ..."} {/* Add ellipsis if there are more artists */}
+                          {trackInfo.artists.length > 2 && " ..."}
                         </div>
                       </div>
                     </div>
@@ -761,35 +759,35 @@ export default function LetterModal({ letter, onClose }: Props) {
                     )}
 
                     {(hasPremium || trackInfo.preview_url) ? (
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-center space-x-4">
+                      <div className="space-y-4 flex-1 flex flex-col justify-center">
+                        <div className="flex items-center justify-center space-x-6">
                           <button
                             onClick={skipBackward}
-                            className="w-10 h-10 bg-purple-500 hover:bg-purple-600 text-white border-2 border-black shadow-lg transition-all hover:scale-110"
+                            className="w-12 h-12 bg-purple-500 hover:bg-purple-600 text-white border-2 border-black shadow-lg transition-all hover:scale-110"
                             style={{ borderRadius: "50%" }}
                           >
-                            <SkipBack className="w-5 h-5 mx-auto" />
+                            <SkipBack className="w-6 h-6 mx-auto" />
                           </button>
                           
                           <button
                             onClick={togglePlay}
                             disabled={!!(hasPremium && (!playerReady || isInitializing))}
-                            className="w-15 h-15 bg-pink-500 hover:bg-pink-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white border-3 border-black shadow-xl transition-all hover:scale-110"
+                            className="w-20 h-20 bg-pink-500 hover:bg-pink-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white border-3 border-black shadow-xl transition-all hover:scale-110"
                             style={{ borderRadius: "50%" }}
                           >
-                            {isPlaying ? <Pause className="w-7 h-7 mx-auto" /> : <Play className="w-7 h-7 mx-auto" />}
+                            {isPlaying ? <Pause className="w-10 h-10 mx-auto" /> : <Play className="w-10 h-10 mx-auto" />}
                           </button>
                           
                           <button
                             onClick={skipForward}
-                            className="w-10 h-10 bg-purple-500 hover:bg-purple-600 text-white border-2 border-black shadow-lg transition-all hover:scale-110"
+                            className="w-12 h-12 bg-purple-500 hover:bg-purple-600 text-white border-2 border-black shadow-lg transition-all hover:scale-110"
                             style={{ borderRadius: "50%" }}
                           >
-                            <SkipForward className="w-5 h-5 mx-auto" />
+                            <SkipForward className="w-6 h-6 mx-auto" />
                           </button>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           <input
                             type="range"
                             min={0}
@@ -797,19 +795,19 @@ export default function LetterModal({ letter, onClose }: Props) {
                             value={currentTime}
                             onChange={handleSeek}
                             disabled={!!(hasPremium && (!playerReady || isInitializing))}
-                            className="w-full h-3 bg-gradient-to-r from-pink-300 to-purple-300 rounded-lg appearance-none cursor-pointer border-2 border-black disabled:opacity-50"
+                            className="w-full h-4 bg-gradient-to-r from-pink-300 to-purple-300 rounded-lg appearance-none cursor-pointer border-2 border-black disabled:opacity-50"
                             style={{
                               background: `linear-gradient(to right, #ec4899 0%, #ec4899 ${(currentTime / (duration || 1)) * 100}%, #d8b4fe ${(currentTime / (duration || 1)) * 100}%, #d8b4fe 100%)`
                             }}
                           />
-                          <div className="flex justify-between text-xs text-purple-700 font-semibold">
+                          <div className="flex justify-between text-sm text-purple-700 font-semibold">
                             <span>{formatTime(currentTime)}</span>
                             <span>{formatTime(duration)}</span>
                           </div>
                         </div>
 
-                        <div className="flex items-center space-x-2">
-                          <Volume2 className="w-4 h-4 text-purple-700" />
+                        <div className="flex items-center space-x-3">
+                          <Volume2 className="w-5 h-5 text-purple-700" />
                           <input
                             type="range"
                             min={0}
@@ -817,19 +815,19 @@ export default function LetterModal({ letter, onClose }: Props) {
                             step={0.1}
                             value={volume}
                             onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                            className="flex-1 h-2 bg-gradient-to-r from-cyan-300 to-pink-300 rounded-lg appearance-none cursor-pointer border-2 border-black"
+                            className="flex-1 h-3 bg-gradient-to-r from-cyan-300 to-pink-300 rounded-lg appearance-none cursor-pointer border-2 border-black"
                           />
-                          <span className="text-xs text-purple-700 font-semibold w-8">{Math.round(volume * 100)}</span>
+                          <span className="text-sm text-purple-700 font-semibold w-10">{Math.round(volume * 100)}</span>
                         </div>
                       </div>
                     ) : (
-                      <div className="text-center py-4">
-                        <p className="text-purple-700 font-semibold mb-2">🚫 No preview available for this track</p>
+                      <div className="text-center py-8 flex-1 flex flex-col justify-center">
+                        <p className="text-purple-700 font-semibold mb-4 text-lg">🚫 No preview available for this track</p>
                         <a
                           href={trackInfo.external_urls.spotify}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-block mt-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-bold border-2 border-black shadow-lg transition-all hover:scale-105"
+                          className="inline-block mt-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-bold border-2 border-black shadow-lg transition-all hover:scale-105 text-lg"
                           style={{ borderRadius: "10px" }}
                         >
                           🎧 Listen on Spotify
@@ -841,33 +839,30 @@ export default function LetterModal({ letter, onClose }: Props) {
               </div>
             )}
 
-            {/* Photo - Sized to match player height without warping */}
+            {/* Photo - Better proportioned */}
             {letter.photoUrl && (
               <div className="flex-shrink-0">
                 <img
                   src={letter.photoUrl}
                   alt="letter photo"
-                  className="border-4 border-black shadow-xl object-contain"
+                  className="border-4 border-black shadow-xl object-cover"
                   style={{ 
                     borderRadius: "15px",
-                    maxHeight: letter.songUrl ? "350px" : "300px", // Adjust based on whether player exists
-                    maxWidth: "300px",
-                    width: "300px",
-                    height: letter.songUrl ? "350px" : "300px"
+                    width: "400px",
+                    height: "400px"
                   }}
                 />
               </div>
-
             )}
           </div>
         </div>
 
         {/* Bottom Row - Letter Content (Scrollable) */}
         <div 
-          className="flex-1 p-4 bg-yellow-100 border-4 border-black overflow-y-auto min-h-0"
+          className="flex-1 p-6 bg-yellow-100 border-4 border-black overflow-y-auto min-h-0"
           style={{ borderRadius: "12px" }}
         >
-          <p className="whitespace-pre-wrap text-purple-900 leading-relaxed font-medium">
+          <p className="whitespace-pre-wrap text-purple-900 leading-relaxed font-medium text-lg">
             {letter.content}
           </p>
         </div>
