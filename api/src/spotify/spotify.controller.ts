@@ -16,25 +16,64 @@ export class SpotifyController {
   }
 
   @Get('callback')
-  async callback(@Query('code') code: string, @Res() res: Response) {
+  async callback(@Query('code') code: string, @Query('error') error: string, @Res() res: Response) {
     console.log("Spotify callback hit with code:", code);
-    try {
-      const tokenData = await this.spotifyService.exchangeCodeForToken(code);
-
+    console.log("Spotify callback error parameter:", error);
+    
+    if (error) {
+      console.error("Spotify authorization error:", error);
       res.send(`
         <script>
-          // Send token data to the opener window
+          if (window.opener) {
+            window.opener.postMessage({ error: "${error}" }, "*");
+            window.close();
+          } else {
+            document.body.innerText = "Authorization failed: ${error}";
+          }
+        </script>
+      `);
+      return;
+    }
+
+    if (!code) {
+      console.error("No authorization code received");
+      res.send(`
+        <script>
+          if (window.opener) {
+            window.opener.postMessage({ error: "No authorization code received" }, "*");
+            window.close();
+          } else {
+            document.body.innerText = "Authorization failed: No code received";
+          }
+        </script>
+      `);
+      return;
+    }
+
+    try {
+      const tokenData = await this.spotifyService.exchangeCodeForToken(code);
+      res.send(`
+        <script>
           if (window.opener) {
             window.opener.postMessage(${JSON.stringify(tokenData)}, "*");
             window.close();
           } else {
-            document.body.innerText = "No opener window found. Please close this tab.";
+            document.body.innerText = "Success! You can close this tab.";
           }
         </script>
       `);
     } catch (error) {
       console.error("Spotify callback error:", error);
-      res.status(500).json({ error: 'Failed to exchange code for token' });
+      res.send(`
+        <script>
+          if (window.opener) {
+            window.opener.postMessage({ error: "Token exchange failed" }, "*");
+            window.close();
+          } else {
+            document.body.innerText = "Token exchange failed. Please try again.";
+          }
+        </script>
+      `);
     }
   }
 

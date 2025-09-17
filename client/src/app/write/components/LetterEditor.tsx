@@ -280,7 +280,12 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
     try {
       const results = await apiFetch<{ tracks: { items: SpotifyTrack[] } }>(
         `/spotify/search?query=${encodeURIComponent(songQuery)}`, 
-        { headers: { Authorization: `Bearer ${tokenjwt}`, "Spotify-Access-Token": token } }
+        { 
+          headers: { 
+            Authorization: `Bearer ${tokenjwt}`, 
+            "Spotify-Access-Token": token  // Make sure this matches your controller header name
+          } 
+        }
       );
       setSongResults(results.tracks.items);
     } catch (err: unknown) {
