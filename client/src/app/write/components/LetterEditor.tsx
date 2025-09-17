@@ -75,7 +75,7 @@ export default function LetterEditor({ recipient, onComplete, onBack }: Props) {
   }, []);
 
   useEffect(() => {
-    setTimestamp(new Date().toLocaleString());
+    setTimestamp(new Date().toISOString());
   }, []);
 
   const connectSpotify = () => {
