@@ -15,6 +15,20 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     console.log('✅ NestJS application created successfully');
 
+    // ???
+    if (app.getHttpAdapter && typeof app.getHttpAdapter === 'function') {
+      const httpAdapter = app.getHttpAdapter();
+      if (httpAdapter.getHttpServer && typeof httpAdapter.getHttpServer === 'function') {
+        const server = httpAdapter.getHttpServer();
+        const router = server._router; // Access the router directly from the Express server
+        console.log('Registered routes:', router.stack.map(r => r.route?.path) || 'Unable to get routes');
+      }
+      const routes = app.getHttpAdapter().getHttpServer()._router.stack
+        .filter((r: any) => r.route) // Filter out non-route items
+        .map((r: any) => r.route.path); // Get the route paths
+      console.log('Registered routes:', routes.length ? routes : 'Unable to get routes');
+    }
+
     console.log('🌐 Configuring CORS...');
     const allowedOrigins = [
       'http://localhost:3000',

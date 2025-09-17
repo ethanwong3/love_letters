@@ -77,7 +77,7 @@ export class SpotifyController {
     }
   }
 
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Options('search')
   @Get('search')
   async searchSongs(
@@ -85,6 +85,7 @@ export class SpotifyController {
     @Headers('spotify-access-token') spotifyToken: string,
     @Req() req
   ) {
+    console.log('🔍 SEARCH ENDPOINT HIT - Query:', query); // Add this line
     this.logger.debug(`Received search request with query: ${query}`);
     
     // Try to get token from header first, then from user object
