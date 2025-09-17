@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Res, Req, UseGuards, Headers } from '@nestjs/common';
+import { Controller, Get, Query, Res, Req, UseGuards, Headers, Options } from '@nestjs/common';
 import type { Response } from 'express';
 import { SpotifyService } from './spotify.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
@@ -78,6 +78,7 @@ export class SpotifyController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Options('search')
   @Get('search')
   async searchSongs(
     @Query('query') query: string, 
@@ -105,6 +106,7 @@ export class SpotifyController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Options('song')  
   @Get('song')
   async getSongMetadata(
     @Query('id') id: string, 
