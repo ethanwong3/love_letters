@@ -844,19 +844,20 @@ export default function LetterModal({ letter, onClose }: Props) {
             {/* Photo - Sized to match player height without warping */}
             {letter.photoUrl && (
               <div className="flex-shrink-0">
-                <Image
+                <img
                   src={letter.photoUrl}
                   alt="letter photo"
-                  width={300}
-                  height={letter.songUrl ? 350 : 300}
                   className="border-4 border-black shadow-xl object-contain"
                   style={{ 
                     borderRadius: "15px",
                     maxHeight: letter.songUrl ? "350px" : "300px", // Adjust based on whether player exists
-                    maxWidth: "300px"
+                    maxWidth: "300px",
+                    width: "300px",
+                    height: letter.songUrl ? "350px" : "300px"
                   }}
                 />
               </div>
+
             )}
           </div>
         </div>
